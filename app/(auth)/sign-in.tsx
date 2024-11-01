@@ -1,7 +1,9 @@
 import { useSignIn } from "@clerk/clerk-expo";
 import { Link, router } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Alert, Image, ScrollView, Text, View } from "react-native";
+
+import Constants from "expo-constants";
 
 import CustomButton from "@/components/CustomButton";
 import InputField from "@/components/InputField";
@@ -10,14 +12,62 @@ import { icons, images } from "@/constants";
 
 const SignIn = () => {
   const { signIn, setActive, isLoaded } = useSignIn();
+  const [isAgence, setAgence] = useState(false);
+  const [loading, setLoading] = useState(false); // Added loading state
 
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
+const bin = process.env.EXPO_X_MASTER_API_KEY;
+
+
+  
+
+  const fetchUserData = async (email: string): Promise<boolean> => {
+    try {
+      const jsonBinUrl = "https://api.jsonbin.io/v3/b/67194b3ee41b4d34e447b219"; // Replace with your actual bin ID
+
+      // Build headers conditionally
+      const headers: HeadersInit = {};
+      if (bin) {
+        headers["X-Master-Key"] = bin; // Only add if apiKey is defined
+      }
+
+      const agenceResponse = await fetch(jsonBinUrl, {
+        headers: headers,
+      });
+
+      // Check if the response is OK
+      if (!agenceResponse.ok) {
+        const errorText = await agenceResponse.text();
+        console.error("Error fetching user data 1:", errorText);
+        throw new Error(`HTTP error! status: ${agenceResponse.status}`);
+      }
+
+      const {
+        record: { adminEmails },
+      } = await agenceResponse.json(); // JSONBin response is wrapped in a 'record' object
+    const isAgence = adminEmails
+      .map((e :string) => e.toLowerCase())
+      .includes(email.toLowerCase());
+      console.log("Fetched user email:", email);
+      console.log("Admins found:", adminEmails);
+
+      setAgence(isAgence); // Update the state to reflect if the user is an admin
+
+      return isAgence; // Return the isAgence value
+    } catch (error) {
+      console.error("Error fetching user data: 2", error);
+      return false; // Return false in case of an error
+    }
+  };
+
   const onSignInPress = useCallback(async () => {
     if (!isLoaded) return;
+
+    setLoading(true); // Set loading to true
 
     try {
       const signInAttempt = await signIn.create({
@@ -27,15 +77,26 @@ const SignIn = () => {
 
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
-        router.replace("/(root)/(tabs)/home");
+        // Fetch user data after successful sign in and await its result
+        const isAgence = await fetchUserData(form.email);
+
+        // Navigate based on isAgence state
+        if (isAgence) {
+          router.replace("/(root)/(tabsAgence)/home");
+        } else {
+          router.replace("/(root)/(tabs)/home");
+
+          
+        }
       } else {
-        // See https://clerk.com/docs/custom-flows/error-handling for more info on error handling
         console.log(JSON.stringify(signInAttempt, null, 2));
         Alert.alert("Error", "Log in failed. Please try again.");
       }
     } catch (err: any) {
       console.log(JSON.stringify(err, null, 2));
-      Alert.alert("Error", err.errors[0].longMessage);
+      Alert.alert("Error", err.errors[0]?.longMessage || "An error occurred");
+    } finally {
+      setLoading(false); // Reset loading state
     }
   }, [isLoaded, form]);
 
@@ -70,9 +131,10 @@ const SignIn = () => {
           />
 
           <CustomButton
-            title="Sign In"
+            title={loading ? "Signing In..." : "Sign In"} // Update button text based on loading
             onPress={onSignInPress}
             className="mt-6"
+            disabled={loading} // Disable button while loading
           />
 
           <OAuth />

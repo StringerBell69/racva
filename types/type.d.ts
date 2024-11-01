@@ -53,6 +53,19 @@ declare interface Ride {
   };
 }
 
+declare interface Car {
+  id_voiture: number; // Unique identifier for the car
+  id_agence: number; // Identifier for the agency that owns the car
+  marque: string; // Brand of the car
+  modele: string; // Model of the car
+  annee: number; // Year of manufacture
+  disponible: boolean; // Availability status of the car
+  photo1?: string; // URL or path to the first photo of the car (optional)
+  photo2?: string; // URL or path to the second photo of the car (optional)
+  photo3?: string; // URL or path to the third photo of the car (optional)
+}
+
+
 declare interface ButtonProps extends TouchableOpacityProps {
   title: string;
   bgVariant?: "primary" | "secondary" | "danger" | "outline" | "success";
@@ -131,7 +144,12 @@ declare interface DriverStore {
   setDrivers: (drivers: MarkerData[]) => void;
   clearSelectedDriver: () => void;
 }
-
+declare interface CarStore {
+  car: Car | null; // The currently stored car object
+  setCar: (car: Car) => void; // Function to set the car object
+  clearCar: () => void; // Function to clear the car object
+  updateCar: (updatedCar: Partial<Car>) => void;
+}
 declare interface DriverCardProps {
   item: MarkerData;
   selected: number;
