@@ -8,12 +8,7 @@ export async function GET(request: Request, { id }: { id: string }) {
     const sql = neon(`${process.env.DATABASE_URL}`);
     const response = await sql`
        
-        SELECT id_voiture,
-        marque,
-        modele,
-        annee,
-        photo1,
-        disponible
+        SELECT *
         FROM voiture WHERE id_agence = 
         (SELECT id_agence from users WHERE clerk_id =${id})`;
 

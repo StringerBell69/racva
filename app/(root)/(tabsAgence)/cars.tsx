@@ -6,11 +6,11 @@ import {
   Text,
   View,
   TouchableOpacity,
+  StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { router } from "expo-router";
-import styles from '@/styles/editCar'; // Adjust the path accordingly
 import CarsCard from "@/components/CarsCard";
 import { images } from "@/constants";
 import { useFetch } from "@/lib/fetch";
@@ -43,6 +43,7 @@ const handleCreate = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
+      <StatusBar barStyle="dark-content" />
       <FlatList
         data={allCars}
         renderItem={({ item }) => (
@@ -76,11 +77,16 @@ const handleCreate = () => {
         )}
         ListHeaderComponent={
           <>
-            <Text className="text-2xl font-JakartaBold my-5">My Cars</Text>
+            <View className="flex flex-row items-center justify-between my-5">
+              <Text className="text-2xl font-bold">My Cars</Text>
 
-            <TouchableOpacity style={styles.saveButton} onPress={handleCreate}>
-              <Text style={styles.saveButtonText}>Save Changes</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                className="bg-blue-500 px-2 py-1 rounded"
+                onPress={handleCreate}
+              >
+                <Text className="text-white text-sm">Add New Car</Text>
+              </TouchableOpacity>
+            </View>
           </>
         }
       />

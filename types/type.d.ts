@@ -53,16 +53,21 @@ declare interface Ride {
   };
 }
 
-declare interface Car {
+interface Car {
   id_voiture: number; // Unique identifier for the car
   id_agence: number; // Identifier for the agency that owns the car
   marque: string; // Brand of the car
   modele: string; // Model of the car
   annee: number; // Year of manufacture
   disponible: boolean; // Availability status of the car
+  photo_url?: string; // URL or path to the first photo of the car (optional)
   photo1?: string; // URL or path to the first photo of the car (optional)
   photo2?: string; // URL or path to the second photo of the car (optional)
   photo3?: string; // URL or path to the third photo of the car (optional)
+  price_per_day?: number; // Price per day for renting the car (optional)
+  price_per_week?: number; // Price per week for renting the car (optional)
+  price_per_day_on_weekend?: number; // Price per day on weekends (optional)
+  price_full_weekend?: number; // Full price for renting over the weekend (optional)
 }
 
 

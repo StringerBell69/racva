@@ -28,7 +28,7 @@ const CarsCard = ({
         {/* Display the car photo or a placeholder */}
         {voiture.photo1 ? (
           <Image
-            source={{ uri: voiture.photo1 }}
+            source={{ uri: voiture.photo_url }}
             className="w-[60px] h-[70px] rounded-lg"
           />
         ) : (
@@ -63,19 +63,17 @@ const CarsCard = ({
         </View>
 
         {/* Column for pricing and rating (Right Side) */}
-        <View className="flex flex-col items-end">
+        <View className="flex flex-col items-end items-start justify-start">
           {/* Pricing */}
           <Text className="text-md font-JakartaMedium text-blue-500">
-            23 $ /D
+            {`Day: ${voiture.price_per_day} €`}
           </Text>
-
-          {/* Rating */}
-          <View className="flex flex-row items-center mt-1">
-            <Image source={icons.star} className="w-5 h-5 mr-1" />
-            <Text className="text-md font-JakartaMedium text-yellow-500">
-              5/5
-            </Text>
-          </View>
+          <Text className="text-md font-JakartaMedium text-blue-500">
+            {`Week: ${voiture.price_per_week} €`}
+          </Text>
+          <Text className="text-md font-JakartaMedium text-blue-500">
+            {`Weekend: ${voiture.price_full_weekend} €`}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
