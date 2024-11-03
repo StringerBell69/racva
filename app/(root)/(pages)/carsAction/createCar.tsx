@@ -149,7 +149,7 @@ const createCar = ({ title = "Add Car", snapPoints = ["100%"] }) => {
       });
 
       Alert.alert("Success", "Car details saved successfully.");
-      // router.back(); // Uncomment if you want to navigate back after success
+      router.back();
     } catch (error) {
       console.error("Error saving car details:", error);
       Alert.alert(

@@ -5,10 +5,10 @@ import {
   Image,
   Text,
   View,
-  TouchableOpacity,
   StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Cbutton from "@/components/Cbutton"; // Adjust the import path accordingly
 
 import { router } from "expo-router";
 import CarsCard from "@/components/CarsCard";
@@ -30,6 +30,7 @@ const Cars = () => {
   } = useFetch<Car[]>(`/(api)/cars/${user?.id}`);
 
 const handleCardPress = (car: Car) => {
+  
   setCar(car);
 
   router.push("/(pages)/carsAction/modifyCar");
@@ -79,13 +80,13 @@ const handleCreate = () => {
           <>
             <View className="flex flex-row items-center justify-between my-5">
               <Text className="text-2xl font-bold">My Cars</Text>
-
-              <TouchableOpacity
-                className="bg-blue-500 px-2 py-1 rounded"
+              <Cbutton
+                title="Add New Car"
+                bgVariant="primary"
+                textVariant="default"
                 onPress={handleCreate}
-              >
-                <Text className="text-white text-sm">Add New Car</Text>
-              </TouchableOpacity>
+              />
+              
             </View>
           </>
         }

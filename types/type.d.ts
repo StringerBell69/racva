@@ -1,4 +1,5 @@
 import { TextInputProps, TouchableOpacityProps } from "react-native";
+import { Float } from "react-native/Libraries/Types/CodegenTypes";
 
 declare interface Driver {
   id: number;
@@ -69,6 +70,19 @@ interface Car {
   price_per_day_on_weekend?: number; // Price per day on weekends (optional)
   price_full_weekend?: number; // Full price for renting over the weekend (optional)
 }
+
+interface Rent {
+  date: string; // rental start date
+  date_end: string; // rental end date
+  status: string; // status of the rental
+  paid: boolean; // whether the rental is paid
+  amount: number; // rental amount
+  renter: string; // name of the renter
+}
+interface Earnings {
+  paid_count: string; // Adjust the property to match the API response
+}
+
 
 
 declare interface ButtonProps extends TouchableOpacityProps {
