@@ -77,7 +77,6 @@ const createCar = ({ title = "Add Car", snapPoints = ["100%"] }) => {
     }
 
     setIsLoading(true); // Set loading state
-    console.log("Making API call with data:", userId);
 
     let uploadedUrls = []; // Declare uploadedUrls outside the try block
 

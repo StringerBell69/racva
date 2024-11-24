@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  SafeAreaView,
+} from "react-native";
 import { router } from "expo-router";
 import { useCarStore } from "@/store";
 import { icons, images } from "@/constants";
@@ -53,6 +60,8 @@ const ModifyCar: React.FC = () => {
   
 
   return (
+<SafeAreaView className="flex-1 bg-white">
+
     <ScrollView className="bg-white p-4">
       <View className="flex-row items-center p-4 bg-white">
         <TouchableOpacity onPress={() => router.back()}>
@@ -97,7 +106,7 @@ const ModifyCar: React.FC = () => {
                   onPress={() => alert(`Downloading contract for ${renter}...`)}
                 >
                   <Text className="text-white text-center text-sm">
-                    Télécharger Contrat
+                    PDF
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -108,13 +117,9 @@ const ModifyCar: React.FC = () => {
         )}
       </View>
 
-      <TouchableOpacity
-        className="bg-blue-500 py-2 px-4 rounded-full mt-4"
-        onPress={() => router.push(`/(pages)/carsAction/rents/allRents`)}
-      >
-        <Text className="text-white text-center">Toutes les Locations</Text>
-      </TouchableOpacity>
+      
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

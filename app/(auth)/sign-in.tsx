@@ -1,73 +1,60 @@
 import { useSignIn } from "@clerk/clerk-expo";
 import { Link, router } from "expo-router";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { Alert, Image, ScrollView, Text, View } from "react-native";
+import { useAuth } from "@clerk/clerk-expo";
 
-import Constants from "expo-constants";
-
+import { Jsonbin } from "@/types/type";
 import CustomButton from "@/components/CustomButton";
 import InputField from "@/components/InputField";
 import OAuth from "@/components/OAuth";
 import { icons, images } from "@/constants";
+import { useFetch } from "@/lib/fetch";
+import { useUserTypeStore } from "@/store";
 
 const SignIn = () => {
   const { signIn, setActive, isLoaded } = useSignIn();
-  const [isAgence, setAgence] = useState(false);
-  const [loading, setLoading] = useState(false); // Added loading state
+  const { signOut } = useAuth();
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
 
-const bin = process.env.EXPO_X_MASTER_API_KEY;
+  const bin = process.env.EXPO_X_MASTER_API_KEY;
+  const { setUserType } = useUserTypeStore();
 
+  // Fetch JSON bin data
+  const { data: jsonBinData } = useFetch<Jsonbin[]>(`/(api)/jsonbin`);
 
-  
-
+  // Fetch user type based on email
   const fetchUserData = async (email: string): Promise<boolean> => {
     try {
-      const jsonBinUrl = "https://api.jsonbin.io/v3/b/67194b3ee41b4d34e447b219"; // Replace with your actual bin ID
+      const jsonBinUrl = jsonBinData?.[0]?.jsonbin_url;
+      const headers: HeadersInit = bin ? { "X-Master-Key": bin } : {};
 
-      // Build headers conditionally
-      const headers: HeadersInit = {};
-      if (bin) {
-        headers["X-Master-Key"] = bin; // Only add if apiKey is defined
-      }
+      const response = await fetch(
+        jsonBinUrl || "https://api.jsonbin.io/v3/b/67194b3ee41b4d34e447b219",
+        { headers }
+      );
 
-      const agenceResponse = await fetch(jsonBinUrl, {
-        headers: headers,
-      });
-
-      // Check if the response is OK
-      if (!agenceResponse.ok) {
-        const errorText = await agenceResponse.text();
-        console.error("Error fetching user data 1:", errorText);
-        throw new Error(`HTTP error! status: ${agenceResponse.status}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data: ${response.statusText}`);
       }
 
       const {
         record: { adminEmails },
-      } = await agenceResponse.json(); // JSONBin response is wrapped in a 'record' object
-    const isAgence = adminEmails
-      .map((e :string) => e.toLowerCase())
-      .includes(email.toLowerCase());
-      console.log("Fetched user email:", email);
-      console.log("Admins found:", adminEmails);
-
-      setAgence(isAgence); // Update the state to reflect if the user is an admin
-
-      return isAgence; // Return the isAgence value
+      } = await response.json();
+      return adminEmails
+        .map((e: string) => e.toLowerCase())
+        .includes(email.toLowerCase());
     } catch (error) {
-      console.error("Error fetching user data: 2", error);
-      return false; // Return false in case of an error
+      console.error("Error fetching user type:", error);
+      return false;
     }
   };
 
   const onSignInPress = useCallback(async () => {
     if (!isLoaded) return;
-
-    setLoading(true); // Set loading to true
+    setLoading(true);
 
     try {
       const signInAttempt = await signIn.create({
@@ -77,28 +64,27 @@ const bin = process.env.EXPO_X_MASTER_API_KEY;
 
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
-        // Fetch user data after successful sign in and await its result
-        const isAgence = await fetchUserData(form.email);
 
-        // Navigate based on isAgence state
+        // Determine if the user is an agency
+        const isAgence = await fetchUserData(form.email);
         if (isAgence) {
+          setUserType("agence");
           router.replace("/(root)/(tabsAgence)/home");
         } else {
+          setUserType("user");
           router.replace("/(root)/(tabs)/home");
-
-          
         }
       } else {
         console.log(JSON.stringify(signInAttempt, null, 2));
-        Alert.alert("Error", "Log in failed. Please try again.");
+        Alert.alert("Error", "Login failed. Please try again.");
       }
     } catch (err: any) {
-      console.log(JSON.stringify(err, null, 2));
+      console.error(JSON.stringify(err, null, 2));
       Alert.alert("Error", err.errors[0]?.longMessage || "An error occurred");
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
-  }, [isLoaded, form]);
+  }, [isLoaded, form, jsonBinData]);
 
   return (
     <ScrollView className="flex-1 bg-white">
@@ -111,6 +97,7 @@ const bin = process.env.EXPO_X_MASTER_API_KEY;
         </View>
 
         <View className="p-5">
+          {/* Email Input */}
           <InputField
             label="Email"
             placeholder="Enter email"
@@ -120,25 +107,29 @@ const bin = process.env.EXPO_X_MASTER_API_KEY;
             onChangeText={(value) => setForm({ ...form, email: value })}
           />
 
+          {/* Password Input */}
           <InputField
             label="Password"
             placeholder="Enter password"
             icon={icons.lock}
-            secureTextEntry={true}
+            secureTextEntry
             textContentType="password"
             value={form.password}
             onChangeText={(value) => setForm({ ...form, password: value })}
           />
 
+          {/* Sign-In Button */}
           <CustomButton
-            title={loading ? "Signing In..." : "Sign In"} // Update button text based on loading
+            title={loading ? "Signing In..." : "Sign In"}
             onPress={onSignInPress}
             className="mt-6"
-            disabled={loading} // Disable button while loading
+            disabled={loading}
           />
 
+          {/* OAuth Providers */}
           <OAuth />
 
+          {/* Sign-Up Link */}
           <Link
             href="/sign-up"
             className="text-lg text-center text-general-200 mt-10"

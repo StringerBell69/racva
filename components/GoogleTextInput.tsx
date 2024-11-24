@@ -1,18 +1,28 @@
 import { View, Image } from "react-native";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-
+import { useState, useEffect } from "react";
 import { icons } from "@/constants";
 import { GoogleInputProps } from "@/types/type";
+import React from "react";
 
 const googlePlacesApiKey = process.env.EXPO_PUBLIC_PLACES_API_KEY;
 
-const GoogleTextInput = ({
+const GoogleTextInput: React.FC<GoogleInputProps> = ({
   icon,
-  initialLocation,
+  initialLocation = "",
   containerStyle,
   textInputBackgroundColor,
   handlePress,
-}: GoogleInputProps) => {
+}) => {
+  const [inputValue, setInputValue] = useState("");
+
+  // Effect to update the input value if the initial location changes
+  useEffect(() => {
+    if (initialLocation) {
+      setInputValue(initialLocation);
+    }
+  }, [initialLocation]);
+
   return (
     <View
       className={`flex flex-row items-center justify-center relative z-50 rounded-xl ${containerStyle}`}
@@ -31,9 +41,7 @@ const GoogleTextInput = ({
             shadowColor: "#d4d4d4",
           },
           textInput: {
-            backgroundColor: textInputBackgroundColor
-              ? textInputBackgroundColor
-              : "white",
+            backgroundColor: "white",
             fontSize: 16,
             fontWeight: "600",
             marginTop: 5,
@@ -41,9 +49,7 @@ const GoogleTextInput = ({
             borderRadius: 200,
           },
           listView: {
-            backgroundColor: textInputBackgroundColor
-              ? textInputBackgroundColor
-              : "white",
+            backgroundColor: "white",
             position: "relative",
             top: 0,
             width: "100%",
@@ -53,20 +59,22 @@ const GoogleTextInput = ({
           },
         }}
         onPress={(data, details = null) => {
-          handlePress({
-            latitude: details?.geometry.location.lat!,
-            longitude: details?.geometry.location.lng!,
-            address: data.description,
-          });
+          if (handlePress) {
+            handlePress({
+              latitude: details?.geometry.location.lat!,
+              longitude: details?.geometry.location.lng!,
+              address: data.description,
+            });
+          }
         }}
         query={{
-          key: googlePlacesApiKey,
+          key: "h",
           language: "en",
         }}
         renderLeftButton={() => (
           <View className="justify-center items-center w-6 h-6">
             <Image
-              source={icon ? icon : icons.search}
+              source={icon || icons.search}
               className="w-6 h-6"
               resizeMode="contain"
             />
@@ -74,7 +82,9 @@ const GoogleTextInput = ({
         )}
         textInputProps={{
           placeholderTextColor: "gray",
-          placeholder: initialLocation ?? "Where do you want to go?",
+          placeholder: inputValue || "Where do you want to go?",
+          onChangeText: (text) => setInputValue(text),
+          value: inputValue,
         }}
       />
     </View>

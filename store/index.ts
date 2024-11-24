@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { DriverStore, LocationStore, MarkerData, CarStore,Car } from "@/types/type";
+import { DriverStore, LocationStore, MarkerData, CarStore,Car,UserType } from "@/types/type";
 
 export const useLocationStore = create<LocationStore>((set) => ({
   userLatitude: null,
@@ -59,7 +59,23 @@ export const useDriverStore = create<DriverStore>((set) => ({
   clearSelectedDriver: () => set(() => ({ selectedDriver: null })),
 }));
 
+// Define a type for the store state
+interface InputStore {
+  inputValue: string | null; // Use '|' instead of '||'
+  setInputValue: (value: string) => void;
+}
 
+// Create the store
+export const useInputStore = create<InputStore>((set) => ({
+  inputValue: null,
+  setInputValue: (value: string) => set({ inputValue: value }),
+}));
+
+export const useUserTypeStore = create<UserType>((set) => ({
+  userType: null, // Initialize with no user type selected
+  setUserType: (userType: string) => set({ userType }), // Set the user type object
+  clearUserType: () => set({ userType: null }), // Clear the UserType object
+}));
 
 export const useCarStore = create<CarStore>((set) => ({
   car: null, // Initialize with no car selected

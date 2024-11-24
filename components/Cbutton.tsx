@@ -26,7 +26,7 @@ const Cbutton: React.FC<ButtonProps> = ({
 }) => {
   // Background color styles
   const bgColorClasses = {
-    primary: "bg-blue-500",
+    primary: "bg-sky-500",
     secondary: "bg-gray-500",
     danger: "bg-red-500",
     outline: "bg-transparent border border-blue-500",

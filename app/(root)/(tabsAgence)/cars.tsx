@@ -9,38 +9,41 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Cbutton from "@/components/Cbutton"; // Adjust the import path accordingly
-
 import { router } from "expo-router";
 import CarsCard from "@/components/CarsCard";
 import { images } from "@/constants";
 import { useFetch } from "@/lib/fetch";
 import { Car } from "@/types/type";
 import { useCarStore } from "@/store";
-
-
+import { useState, useCallback } from "react";
 
 const Cars = () => {
   const { user } = useUser();
   const { setCar } = useCarStore();
-
+  const [refreshing, setRefreshing] = useState(false);
+console.log("userid",user?.id)
   const {
     data: allCars,
     loading,
     error,
+    refetch, // Refetch function to reload data
   } = useFetch<Car[]>(`/(api)/cars/${user?.id}`);
+console.log("allcars", allCars);
+  const handleCardPress = (car: Car) => {
+    setCar(car);
+    router.push(`/(pages)/carsAction/modifyCar`);
+  };
 
-const handleCardPress = (car: Car) => {
-  
-  setCar(car);
+  const handleCreate = () => {
+    router.push(`/(pages)/carsAction/createCar`);
+  };
 
-  router.push("/(pages)/carsAction/modifyCar");
-};
-
-const handleCreate = () => {
-
-  router.push("/(pages)/carsAction/createCar");
-};
-
+  // Function to handle refreshing the list
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch(); // Call refetch to reload data
+    setRefreshing(false);
+  }, [refetch]);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -59,6 +62,8 @@ const handleCreate = () => {
         contentContainerStyle={{
           paddingBottom: 100,
         }}
+        refreshing={refreshing} // Add refreshing state
+        onRefresh={onRefresh} // Add onRefresh handler
         ListEmptyComponent={() => (
           <View className="flex flex-col items-center justify-center">
             {!loading ? (
@@ -86,7 +91,6 @@ const handleCreate = () => {
                 textVariant="default"
                 onPress={handleCreate}
               />
-              
             </View>
           </>
         }
@@ -94,7 +98,5 @@ const handleCreate = () => {
     </SafeAreaView>
   );
 };
-
-
 
 export default Cars;

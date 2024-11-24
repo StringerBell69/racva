@@ -3,6 +3,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  Image,
   Alert,
   StatusBar,
   Switch,
@@ -10,15 +11,15 @@ import {
 import { useState } from "react";
 import { fetchAPI } from "@/lib/fetch";
 import { router } from "expo-router";
+import { icons, images } from "@/constants";
 import CarsLayout from "@/components/CarsLayout";
-import CustomButton from "@/components/CustomButton";
+import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { useAuth } from "@clerk/clerk-expo";
 import { useCarStore } from "@/store";
-// Ensure icons are correctly imported
-import { icons } from "@/constants"; // Adjust this path as needed
+import Cbutton from "@/components/Cbutton"; // Adjust the import path accordingly
 
-const EditCar = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
+const edit = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
   const { car } = useCarStore();
   const [make, setMake] = useState(car?.marque || "");
   const [model, setModel] = useState(car?.modele || "");
@@ -44,6 +45,34 @@ const EditCar = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
     { length: currentYear - 1985 + 1 },
     (_, i) => currentYear - i
   );
+  const pickImage = async (
+    setter: React.Dispatch<React.SetStateAction<File | null>>
+  ) => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+
+      // Fetch the image data from the URI
+      const response = await fetch(imageUri);
+      const blob = await response.blob(); // Convert the response to a Blob
+
+      // Create a File from the Blob
+      const fileName = result.assets[0].fileName || "image.jpg"; // Use the original filename or fallback
+      const mimeType = result.assets[0].type || "image/jpeg"; // Use the original mime type or fallback
+      const file = new File([blob], fileName, { type: mimeType });
+
+      // Update the state with the File
+      setter(file); // Set the File in state
+    } else {
+      setter(null);
+    }
+  };
 
   const handleSave = async () => {
     if (!make || !model || !year) {
@@ -51,16 +80,23 @@ const EditCar = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
       return;
     }
 
+    setIsLoading(true); // Set loading state
     if (!car) {
-      Alert.alert("Error", "No car data available.");
-      return;
+      return (
+        <View className="flex flex-col items-center justify-center">
+          <Image
+            source={images.noResult}
+            className="w-40 h-40"
+            alt="No recent rides found"
+            resizeMode="contain"
+          />
+          <Text className="text-sm">No recent rides found</Text>
+        </View>
+      );
     }
 
-    setIsLoading(true);
-    console.log("Making API call with data:", userId);
-
     try {
-      const response = await fetchAPI("/(api)/cars/create", {
+      const response = await fetchAPI("/(api)/cars/edit", {
         method: "POST",
         body: JSON.stringify({
           id_voiture: car.id_voiture,
@@ -76,7 +112,6 @@ const EditCar = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
           price_full_weekend: parseFloat(priceFullWeekend) || null,
         }),
       });
-
       Alert.alert("Success", "Car details saved successfully.");
       router.back();
     } catch (error) {
@@ -88,7 +123,7 @@ const EditCar = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
           : "Failed to save car details. Please try again."
       );
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Reset loading state
     }
   };
 
@@ -96,98 +131,52 @@ const EditCar = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
     <CarsLayout title={title} snapPoints={snapPoints}>
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          padding: 16,
-          backgroundColor: "white",
-        }}
-      >
+      <View className="flex-row items-center p-4 bg-white">
         <TouchableOpacity onPress={() => router.back()}>
-          <View
-            style={{ padding: 8, borderRadius: 50, backgroundColor: "gray" }}
-          >
-        <Text> = </Text>
-
+          <View className="p-2 rounded-full bg-gray-200">
+            <Image source={icons.backArrow} className="w-6 h-6" />
           </View>
         </TouchableOpacity>
-        <Text
-          style={{
-            marginLeft: 16,
-            fontSize: 20,
-            fontWeight: "bold",
-            color: "gray",
-          }}
-        >
+        <Text className="ml-4 text-xl font-bold text-gray-800">
           {title || "Go Back"}
         </Text>
       </View>
 
-      <View style={{ padding: 16 }}>
-        <Text style={{ fontSize: 18, color: "gray", marginBottom: 8 }}>
-          Make
-        </Text>
+      <View className="p-4">
+        <Text className="text-lg text-gray-700 mb-2">Make</Text>
         <TextInput
           placeholder="Make"
           value={make}
           onChangeText={setMake}
-          style={{
-            borderBottomWidth: 1,
-            borderColor: "gray",
-            padding: 8,
-            marginBottom: 16,
-          }}
+          className="border-b border-gray-300 p-2 mb-4"
         />
 
-        <Text style={{ fontSize: 18, color: "gray", marginBottom: 8 }}>
-          Model
-        </Text>
+        <Text className="text-lg text-gray-700 mb-2">Model</Text>
         <TextInput
           placeholder="Model"
           value={model}
           onChangeText={setModel}
-          style={{
-            borderBottomWidth: 1,
-            borderColor: "gray",
-            padding: 8,
-            marginBottom: 16,
-          }}
+          className="border-b border-gray-300 p-2 mb-4"
         />
-
-        <Text style={{ fontSize: 18, color: "gray", marginBottom: 8 }}>
-          Price per Day
-        </Text>
+        <Text className="text-lg text-gray-700 mb-2">Price per Day</Text>
         <TextInput
           placeholder="Price per Day"
           value={pricePerDay}
           onChangeText={setPricePerDay}
           keyboardType="decimal-pad"
-          style={{
-            borderBottomWidth: 1,
-            borderColor: "gray",
-            padding: 8,
-            marginBottom: 16,
-          }}
+          className="border-b border-gray-300 p-2 mb-4"
         />
 
-        <Text style={{ fontSize: 18, color: "gray", marginBottom: 8 }}>
-          Price per Week
-        </Text>
+        <Text className="text-lg text-gray-700 mb-2">Price per Week</Text>
         <TextInput
           placeholder="Price per Week"
           value={pricePerWeek}
           onChangeText={setPricePerWeek}
           keyboardType="decimal-pad"
-          style={{
-            borderBottomWidth: 1,
-            borderColor: "gray",
-            padding: 8,
-            marginBottom: 16,
-          }}
+          className="border-b border-gray-300 p-2 mb-4"
         />
 
-        <Text style={{ fontSize: 18, color: "gray", marginBottom: 8 }}>
+        <Text className="text-lg text-gray-700 mb-2">
           Price per Day on Weekend
         </Text>
         <TextInput
@@ -195,71 +184,47 @@ const EditCar = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
           value={pricePerDayOnWeekend}
           onChangeText={setPricePerDayOnWeekend}
           keyboardType="decimal-pad"
-          style={{
-            borderBottomWidth: 1,
-            borderColor: "gray",
-            padding: 8,
-            marginBottom: 16,
-          }}
+          className="border-b border-gray-300 p-2 mb-4"
         />
 
-        <Text style={{ fontSize: 18, color: "gray", marginBottom: 8 }}>
-          Price Full Weekend
-        </Text>
+        <Text className="text-lg text-gray-700 mb-2">Price Full Weekend</Text>
         <TextInput
           placeholder="Price Full Weekend"
           value={priceFullWeekend}
           onChangeText={setPriceFullWeekend}
           keyboardType="decimal-pad"
-          style={{
-            borderBottomWidth: 1,
-            borderColor: "gray",
-            padding: 8,
-            marginBottom: 16,
-          }}
+          className="border-b border-gray-300 p-2 mb-4"
         />
 
-        <Text style={{ fontSize: 18, color: "gray", marginBottom: 8 }}>
-          Year
-        </Text>
+        <Text className="text-lg text-gray-700 mb-2">Year</Text>
         <Picker
           selectedValue={year}
           onValueChange={(itemValue) => setYear(itemValue)}
-          style={{ height: 50, width: "50%", marginBottom: 16 }}
+          className="h-12 w-1/2 mb-4"
         >
           <Picker.Item label="Select Year" value="" />
           {years.map((year) => (
-            <Picker.Item key={year} label={String(year)} value={String(year)} />
+            <Picker.Item key={year} label={String(year)} value={year} />
           ))}
         </Picker>
 
-        <Text style={{ fontSize: 18, color: "gray", marginBottom: 8 }}>
-          Available
-        </Text>
+        <Text className="text-lg text-gray-700 mb-2">Available</Text>
         <Switch
           value={available}
           onValueChange={setAvailable}
-          style={{ marginBottom: 16 }}
+          className="mb-4"
         />
 
-        <TouchableOpacity
-          style={{
-            backgroundColor: isLoading ? "gray" : "green",
-            padding: 16,
-            borderRadius: 8,
-          }}
+        <Cbutton
+          title={isLoading ? "Saving..." : "Save Changes"}
+          bgVariant="primary"
+          textVariant="default"
           onPress={handleSave}
-          disabled={isLoading}
-        >
-          <Text
-            style={{ color: "white", textAlign: "center", fontWeight: "bold" }}
-          >
-            {isLoading ? "Saving..." : "Save Changes"}
-          </Text>
-        </TouchableOpacity>
+        />
+       
       </View>
     </CarsLayout>
   );
 };
 
-export default EditCar;
+export default edit;

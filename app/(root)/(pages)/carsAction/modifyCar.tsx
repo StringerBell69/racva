@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  SafeAreaView,
+} from "react-native";
 import { router } from "expo-router";
 import { useCarStore } from "@/store";
 import { icons, images } from "@/constants";
@@ -21,7 +28,6 @@ const ModifyCar: React.FC = () => {
     loading: loadingEarnings,
     error: errorEarnings,
   } = useFetch<Earnings[]>(`/(api)/cars/paid/${car?.id_voiture}`);
-console.log("actualEarningsData", actualEarningsData);
   const {
     data: recentRentals,
     loading: loadingRents,
@@ -78,6 +84,8 @@ const handleCreate = () => {
       : 1;
 const daysDifference = Difference === 0 ? 1 : Difference;
   return (
+    <SafeAreaView className="flex-1 bg-white">
+
     <ScrollView className="bg-white p-4">
       <View className="flex-row items-center justify-between p-4 bg-white">
         <View className="flex-row items-center">
@@ -125,11 +133,11 @@ const daysDifference = Difference === 0 ? 1 : Difference;
               }`}
             />
             <TouchableOpacity
-              className="bg-blue-500 py-1 px-3 rounded-full"
+              className="bg-sky-400 py-1 px-3 rounded-full"
               onPress={() => alert("Creating PDF Contract...")}
             >
               <Text className="text-white text-center text-sm">
-                Contrat PDF
+                PDF
               </Text>
             </TouchableOpacity>
           </View>
@@ -199,7 +207,7 @@ const daysDifference = Difference === 0 ? 1 : Difference;
                   onPress={() => alert(`Downloading contract for ${renter}...`)}
                 >
                   <Text className="text-white text-center text-sm">
-                    Télécharger Contrat
+                    PDF
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -217,6 +225,7 @@ const daysDifference = Difference === 0 ? 1 : Difference;
         <Text className="text-white text-center">Toutes les Locations</Text>
       </TouchableOpacity>
     </ScrollView>
+    </SafeAreaView>
   );
 };
 

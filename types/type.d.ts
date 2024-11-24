@@ -10,6 +10,11 @@ declare interface Driver {
   car_seats: number;
   rating: number;
 }
+declare interface AgenceData {
+  latitude: number;
+  longitude: number;
+  first_name: string;
+}
 
 declare interface MarkerData {
   latitude: number;
@@ -53,7 +58,9 @@ declare interface Ride {
     car_seats: number;
   };
 }
-
+interface HomeProps {
+  title?: string;
+}
 interface Car {
   id_voiture: number; // Unique identifier for the car
   id_agence: number; // Identifier for the agency that owns the car
@@ -70,7 +77,11 @@ interface Car {
   price_per_day_on_weekend?: number; // Price per day on weekends (optional)
   price_full_weekend?: number; // Full price for renting over the weekend (optional)
 }
-
+interface UserType {
+  userType: string | null; // or whatever type your userType should be
+  setUserType: (userType: string) => void; // Method to set the user type
+  clearUserType: () => void; // Method to clear the user type
+}
 interface Rent {
   date: string; // rental start date
   date_end: string; // rental end date
@@ -81,6 +92,10 @@ interface Rent {
 }
 interface Earnings {
   paid_count: string; // Adjust the property to match the API response
+}
+
+interface Jsonbin {
+  jsonbin_url: string; // Adjust the property to match the API response
 }
 
 
@@ -107,6 +122,7 @@ declare interface GoogleInputProps {
     latitude: number;
     longitude: number;
     address: string;
+    
   }) => void;
 }
 
@@ -168,6 +184,10 @@ declare interface CarStore {
   setCar: (car: Car) => void; // Function to set the car object
   clearCar: () => void; // Function to clear the car object
   updateCar: (updatedCar: Partial<Car>) => void;
+}
+declare interface inputValue {
+  inputValue: string;
+  setInputValue: () => void; // Function to set the car object
 }
 declare interface DriverCardProps {
   item: MarkerData;
