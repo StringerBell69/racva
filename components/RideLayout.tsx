@@ -2,14 +2,10 @@ import BottomSheet, {
   BottomSheetScrollView,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { router } from "expo-router";
 import React, { useRef } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { View, Platform, KeyboardAvoidingView, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
 import MapAgence from "@/components/MapsAgencesUser";
-import { icons } from "@/constants";
-
 const RideLayout = ({
   title,
   snapPoints,
@@ -22,42 +18,56 @@ const RideLayout = ({
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   return (
-    <GestureHandlerRootView className="flex-1">
-      <View className="flex-1 bg-white">
-        <View className="flex flex-col h-screen bg-blue-500">
-         
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={{ flex: 1, backgroundColor: "#fff" }}>
+          {/* Your Map or Main Content */}
+          <View style={{ flex: 1, backgroundColor: "#blue-500" }}>
+            <MapAgence />
+          </View>
 
-          <MapAgence />
+          {/* Bottom Sheet */}
+          <BottomSheet
+            ref={bottomSheetRef}
+            snapPoints={snapPoints || ["40%", "85%"]}
+            index={0}
+            enablePanDownToClose={false}
+            enableOverDrag={true}
+            handleIndicatorStyle={styles.handleIndicator}
+          >
+            {title === "Choose a Rider" ? (
+              <BottomSheetView style={styles.bottomSheetContent}>
+                {children}
+              </BottomSheetView>
+            ) : (
+              <BottomSheetScrollView
+                contentContainerStyle={styles.scrollViewContent}
+              >
+                {children}
+              </BottomSheetScrollView>
+            )}
+          </BottomSheet>
         </View>
-
-        <BottomSheet
-          ref={bottomSheetRef}
-          snapPoints={snapPoints || ["40%", "85%"]}
-          index={0}
-        >
-          {title === "Choose a Rider" ? (
-            <BottomSheetView
-              style={{
-                flex: 1,
-                padding: 20,
-              }}
-            >
-              {children}
-            </BottomSheetView>
-          ) : (
-            <BottomSheetScrollView
-              style={{
-                flex: 1,
-                padding: 20,
-              }}
-            >
-              {children}
-            </BottomSheetScrollView>
-          )}
-        </BottomSheet>
-      </View>
+      </KeyboardAvoidingView>
     </GestureHandlerRootView>
   );
 };
+
+const styles = StyleSheet.create({
+  handleIndicator: {
+    backgroundColor: "#ccc",
+    height: 5,
+  },
+  bottomSheetContent: {
+    flex: 1,
+    padding: 20,
+  },
+  scrollViewContent: {
+    padding: 20,
+  },
+});
 
 export default RideLayout;

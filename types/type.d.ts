@@ -66,7 +66,9 @@ interface Car {
   id_agence: number; // Identifier for the agency that owns the car
   marque: string; // Brand of the car
   modele: string; // Model of the car
-  annee: number; // Year of manufacture
+  annee: number;
+  latitude: number;
+  longitude: number; // Year of manufacture
   disponible: boolean; // Availability status of the car
   photo_url?: string; // URL or path to the first photo of the car (optional)
   photo1?: string; // URL or path to the first photo of the car (optional)

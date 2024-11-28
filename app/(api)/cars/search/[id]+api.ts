@@ -50,7 +50,7 @@ export async function GET(request: Request, { id }: { id?: string }) {
               sin(radians(${userLatitude})) *
               sin(radians(a.latitude))
           )
-        ) <= 50 
+        ) <= 50
         AND (
           v.marque ILIKE '%' || ${id} || '%' 
           OR v.modele ILIKE '%' || ${id} || '%'
