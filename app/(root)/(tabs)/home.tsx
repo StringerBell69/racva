@@ -1,5 +1,4 @@
 import { useUser } from "@clerk/clerk-expo";
-import { useAuth } from "@clerk/clerk-expo";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import { useState, useEffect } from "react";
@@ -7,9 +6,6 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Image,
-  FlatList,
-  ActivityIndicator,
   ScrollView,
 } from "react-native";
 import RideLayout from "@/components/RideLayout";
@@ -17,7 +13,6 @@ import { generateAndDownloadPdf } from "@/components/GeneratePDF";
 
 import CustomInput from "@/components/CustomTextInput";
 
-import { icons, images } from "@/constants";
 import { useFetch } from "@/lib/fetch";
 import { useLocationStore } from "@/store";
 import { Rent, HomeProps } from "@/types/type";
@@ -110,7 +105,7 @@ const [isInputFocused, setIsInputFocused] = useState(false);
                     </Text>
                   </View>
                   <TouchableOpacity
-                    className="bg-blue-500 py-1 px-3 rounded-full"
+                    className="bg-gold-dark py-1 px-3 rounded-full"
                     onPress={() =>
                       generateAndDownloadPdf(
                         renter,

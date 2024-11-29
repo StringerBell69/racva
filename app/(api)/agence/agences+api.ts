@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     const sql = neon(`${process.env.DATABASE_URL}`);
     const response = await sql`
       SELECT
+        id_agence,
         nom_agence AS first_name,
         latitude,
         longitude

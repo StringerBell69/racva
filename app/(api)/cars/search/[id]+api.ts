@@ -22,7 +22,7 @@ export async function GET(request: Request, { id }: { id?: string }) {
     if (!id) {
       // Fetch all cars within a 50km radius when `id` is not provided
       response = await sql`
-        SELECT v.*, v.modele, v.marque, a.latitude, a.longitude
+        SELECT v.*, a.latitude, a.longitude
         FROM voiture v
         JOIN agence a ON v.id_agence = a.id_agence
         WHERE (
@@ -39,7 +39,7 @@ export async function GET(request: Request, { id }: { id?: string }) {
     } else {
       // Fetch filtered cars when `id` is provided
       response = await sql`
-        SELECT v.*, v.modele, v.marque, a.latitude, a.longitude
+        SELECT v.*, a.latitude, a.longitude
         FROM voiture v
         JOIN agence a ON v.id_agence = a.id_agence
         WHERE (

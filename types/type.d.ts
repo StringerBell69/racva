@@ -14,6 +14,7 @@ declare interface AgenceData {
   latitude: number;
   longitude: number;
   first_name: string;
+  id_agence: number;
 }
 
 declare interface MarkerData {
@@ -67,13 +68,18 @@ interface Car {
   marque: string; // Brand of the car
   modele: string; // Model of the car
   annee: number;
+  name: string;
+  address: string;
+  images: string[];
   latitude: number;
   longitude: number; // Year of manufacture
-  disponible: boolean; // Availability status of the car
+  disponible?: boolean; // Availability status of the car
   photo_url?: string; // URL or path to the first photo of the car (optional)
   photo1?: string; // URL or path to the first photo of the car (optional)
   photo2?: string; // URL or path to the second photo of the car (optional)
-  photo3?: string; // URL or path to the third photo of the car (optional)
+  photo3?: string;
+  pricePerDay?: string;
+  pricePerWeekend?: string; // URL or path to the third photo of the car (optional)
   price_per_day?: number; // Price per day for renting the car (optional)
   price_per_week?: number; // Price per week for renting the car (optional)
   price_per_day_on_weekend?: number; // Price per day on weekends (optional)

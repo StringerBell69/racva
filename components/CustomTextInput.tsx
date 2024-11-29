@@ -33,7 +33,7 @@ const CustomInput: React.FC<CustomInputProps> = ({
   };
 
   return (
-    <View className="relative w-full flex-row items-center border-solid border-2 border-sky-500 bg-gray-100 p-3 rounded-lg">
+    <View className="relative w-full flex-row items-center border-solid border-2 border-gold-dark bg-gray-100 p-3 rounded-lg">
       <TextInput
         ref={inputRef}
         className="flex-1 text-base text-gray-700"
