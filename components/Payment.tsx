@@ -2,7 +2,7 @@ import { useAuth } from "@clerk/clerk-expo";
 import { useStripe } from "@stripe/stripe-react-native";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Image, Text, View } from "react-native";
+import { Alert, Image, Pressable, Text, View } from "react-native";
 import { ReactNativeModal } from "react-native-modal";
 
 import CustomButton from "@/components/CustomButton";
@@ -15,18 +15,14 @@ const Payment = ({
   fullName,
   email,
   amount,
-  driverId,
-  rideTime,
+  id_agence,
+  id_voiture,
+
+  start,
+  end,
 }: PaymentProps) => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const {
-    userAddress,
-    userLongitude,
-    userLatitude,
-    destinationLatitude,
-    destinationAddress,
-    destinationLongitude,
-  } = useLocationStore();
+  
 
   const { userId } = useAuth();
   const [success, setSuccess] = useState<boolean>(false);
@@ -45,7 +41,7 @@ const Payment = ({
 
   const initializePaymentSheet = async () => {
     const { error } = await initPaymentSheet({
-      merchantDisplayName: "Example, Inc.",
+      merchantDisplayName: "Racva",
       intentConfiguration: {
         mode: {
           amount: parseInt(amount) * 100,
@@ -93,16 +89,12 @@ const Payment = ({
                   "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                  origin_address: userAddress,
-                  destination_address: destinationAddress,
-                  origin_latitude: userLatitude,
-                  origin_longitude: userLongitude,
-                  destination_latitude: destinationLatitude,
-                  destination_longitude: destinationLongitude,
-                  ride_time: rideTime.toFixed(0),
-                  fare_price: parseInt(amount) * 100,
-                  payment_status: "paid",
-                  driver_id: driverId,
+                  id_agence: id_agence,
+                  id_voiture: id_voiture,
+                  start: start,
+                  end: end,
+                  payment_status: "upcoming",
+                  amount: amount,
                   user_id: userId,
                 }),
               });
@@ -124,11 +116,12 @@ const Payment = ({
 
   return (
     <>
-      <CustomButton
-        title="Confirm Ride"
-        className="my-10"
+      <Pressable
         onPress={openPaymentSheet}
-      />
+        className="bg-gray-900 rounded-xl p-4 items-center"
+      >
+        <Text className="text-gold font-bold text-base">Payer</Text>
+      </Pressable>
 
       <ReactNativeModal
         isVisible={success}
@@ -138,22 +131,23 @@ const Payment = ({
           <Image source={images.check} className="w-28 h-28 mt-5" />
 
           <Text className="text-2xl text-center font-JakartaBold mt-5">
-            Booking placed successfully
+            Réservation confirmée
           </Text>
 
           <Text className="text-md text-general-200 font-JakartaRegular text-center mt-3">
-            Thank you for your booking. Your reservation has been successfully
-            placed. Please proceed with your trip.
+            Votre réservation a été confirmée avec succès. Veuillez vous
+            préparer pour votre voyage.
           </Text>
 
-          <CustomButton
-            title="Back Home"
+          <Pressable
             onPress={() => {
               setSuccess(false);
               router.push("/(root)/(tabs)/home");
             }}
-            className="mt-5"
-          />
+            className="bg-gray-900 mt-5 rounded-xl p-4 items-center"
+          >
+            <Text className="text-gold font-bold text-base">Retour à l'accueil</Text>
+          </Pressable>
         </View>
       </ReactNativeModal>
     </>

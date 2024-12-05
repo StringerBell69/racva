@@ -4,67 +4,82 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const {
-      origin_address,
-      destination_address,
-      origin_latitude,
-      origin_longitude,
-      destination_latitude,
-      destination_longitude,
-      ride_time,
-      fare_price,
+      id_agence,
+      id_voiture,
+      start,
+      end,
+      amount,
       payment_status,
-      driver_id,
       user_id,
     } = body;
 
     if (
-      !origin_address ||
-      !destination_address ||
-      !origin_latitude ||
-      !origin_longitude ||
-      !destination_latitude ||
-      !destination_longitude ||
-      !ride_time ||
-      !fare_price ||
-      !payment_status ||
-      !driver_id ||
-      !user_id
+      (!id_agence || !id_voiture || !start || !end) && 
+      (
+        !payment_status ||
+        !user_id) 
     ) {
       return Response.json(
         { error: "Missing required fields" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const sql = neon(`${process.env.DATABASE_URL}`);
+    console.log(`
+     INSERT INTO rentals (
+    rental_id,
+    voiture_id, 
+    customer_id, 
+    agence_id, 
+    rental_start, 
+    rental_end, 
+    amount, 
+    paid, 
+    status, 
+    created_at
+)
+VALUES (
+    (SELECT MAX(rental_id) FROM rentals)+1,
+    ${id_voiture}, 
+    (SELECT id FROM users WHERE clerk_id ='${user_id}'), 
+    ${id_agence}, 
+    '${start}', 
+    '${end}', 
+    ${amount},
+      TRUE, 
+    'upcoming', 
+    CURRENT_TIMESTAMP
+)RETURNING *;
 
+    `);
     const response = await sql`
-      INSERT INTO rides ( 
-          origin_address, 
-          destination_address, 
-          origin_latitude, 
-          origin_longitude, 
-          destination_latitude, 
-          destination_longitude, 
-          ride_time, 
-          fare_price, 
-          payment_status, 
-          driver_id, 
-          user_id
-      ) VALUES (
-          ${origin_address},
-          ${destination_address},
-          ${origin_latitude},
-          ${origin_longitude},
-          ${destination_latitude},
-          ${destination_longitude},
-          ${ride_time},
-          ${fare_price},
-          ${payment_status},
-          ${driver_id},
-          ${user_id}
-      )
-      RETURNING *;
+    INSERT INTO rentals (
+      rental_id,
+      voiture_id, 
+      customer_id, 
+      agence_id, 
+      rental_start, 
+      rental_end, 
+      amount, 
+      paid, 
+      status, 
+      created_at
+    )
+    VALUES (
+      (SELECT MAX(rental_id) FROM rentals) + 1,
+      ${id_voiture}, 
+      (SELECT id FROM users WHERE clerk_id = ${user_id}),
+      ${id_agence},
+      ${start}::TIMESTAMP, 
+      ${end}::TIMESTAMP, 
+      ${amount},
+      TRUE, 
+      'upcoming', 
+      CURRENT_TIMESTAMP
+    )
+    RETURNING *;
+
     `;
 
     return Response.json({ data: response[0] }, { status: 201 });
