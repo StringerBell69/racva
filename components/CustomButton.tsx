@@ -1,5 +1,5 @@
-import { TouchableOpacity, Text } from "react-native";
-
+import React from "react";
+import { TouchableOpacity, Text, View } from "react-native";
 import { ButtonProps } from "@/types/type";
 
 const getBgVariantStyle = (variant: ButtonProps["bgVariant"]) => {
@@ -39,20 +39,23 @@ const CustomButton = ({
   textVariant = "default",
   IconLeft,
   IconRight,
-  className,
+  className = "",
   ...props
 }: ButtonProps) => {
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`w-full rounded-full p-3 flex flex-row justify-center items-center shadow-md shadow-neutral-400/70 ${getBgVariantStyle(bgVariant)} ${className}`}
+      activeOpacity={0.8}
+      className={`w-full rounded-lg p-4 flex flex-row justify-center items-center shadow-md ${getBgVariantStyle(bgVariant)} ${className}`}
       {...props}
     >
-      {IconLeft && <IconLeft />}
-      <Text className={`text-lg font-bold ${getTextVariantStyle(textVariant)}`}>
+      {IconLeft && <IconLeft className="mr-2" />} 
+      <Text
+        className={`font-semibold text-lg ${getTextVariantStyle(textVariant)}`}
+      >
         {title}
       </Text>
-      {IconRight && <IconRight />}
+      {IconRight && <IconRight className="ml-2" />}
     </TouchableOpacity>
   );
 };

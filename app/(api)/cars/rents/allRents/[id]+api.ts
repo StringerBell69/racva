@@ -19,7 +19,7 @@ export async function GET(request: Request, { id }: { id: string }) {
       WHERE 
           rentals.voiture_id = ${id}
       ORDER BY 
-          rentals.rental_start DESC
+          rentals.cretated_at DESC
           `;
     return Response.json({ data: response });
   } catch (error) {

@@ -1,81 +1,121 @@
-import { useUser } from "@clerk/clerk-expo";
-import { Image, ScrollView, Text, View, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { icons, images } from "@/constants";
-import { useAuth } from "@clerk/clerk-expo";
+import React, { useState } from "react";
+import { useAuth, useUser } from "@clerk/clerk-expo";
+import {
+  SafeAreaView,
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  Switch,
+  Image,
+  Pressable,
+} from "react-native";
+import { icons } from "@/constants";
 import { router } from "expo-router";
 
-import InputField from "@/components/InputField";
-
 const Profile = () => {
+  const { signOut } = useAuth();
   const { user } = useUser();
-    const { signOut } = useAuth();
 
-   const handleSignOut = () => {
-     signOut();
-     router.replace("/(auth)/sign-in");
-   };
+  const [form, setForm] = useState({
+    darkMode: false,
+    emailNotifications: true,
+    pushNotifications: false,
+  });
+
+  const handleSignOut = () => {
+    signOut();
+    router.replace("/(auth)/sign-in");
+  };
+
+  const togglePreference = (key: string, value: boolean) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
   return (
-    <SafeAreaView className="flex-1">
+    <SafeAreaView className="flex-1 bg-gray-100">
       <ScrollView
-        className="px-5"
         contentContainerStyle={{ paddingBottom: 120 }}
+        className="px-5"
       >
-        <Text className="text-2xl font-JakartaBold my-5">My profile</Text>
+        <Text className="text-2xl font-JakartaBold my-5">Settings</Text>
 
+        {/* Sign-Out Button */}
         <TouchableOpacity
           onPress={handleSignOut}
-          className="justify-center items-center w-10 h-10 rounded-full bg-white"
+          className="justify-center items-center w-12 h-12 rounded-full bg-white"
+          accessibilityLabel="Sign Out"
         >
-          <Image source={icons.out} className="w-4 h-4" />
+          <Image source={icons.out} className="w-6 h-6" />
         </TouchableOpacity>
+
+        {/* Profile Section */}
         <View className="flex items-center justify-center my-5">
           <Image
             source={{
-              uri: user?.externalAccounts[0]?.imageUrl ?? user?.imageUrl,
+              uri:
+                user?.externalAccounts[0]?.imageUrl ||
+                user?.imageUrl ||
+                "https://via.placeholder.com/110",
             }}
-            style={{ width: 110, height: 110, borderRadius: 110 / 2 }}
-            className=" rounded-full h-[110px] w-[110px] border-[3px] border-white shadow-sm shadow-neutral-300"
+            style={{ width: 110, height: 110, borderRadius: 55 }}
+            className="border-[3px] border-white shadow-sm shadow-neutral-300"
           />
         </View>
+        <Text className="text-lg font-semibold text-center my-2">
+          {user?.fullName || "User Name"}
+        </Text>
+        <Text className="text-sm text-gray-500 text-center mb-5">
+          {user?.primaryEmailAddress?.emailAddress || "user@example.com"}
+        </Text>
 
-        <View className="flex flex-col items-start justify-center bg-white rounded-lg shadow-sm shadow-neutral-300 px-5 py-3">
-          <View className="flex flex-col items-start justify-start w-full">
-            <InputField
-              label="First name"
-              placeholder={user?.firstName || "Not Found"}
-              containerStyle="w-full"
-              inputStyle="p-3.5"
-              editable={false}
+        {/* Edit Profile Button */}
+        <TouchableOpacity
+          onPress={() => router.push(`/chat`)}
+          className="bg-gray-900 rounded-xl p-4 items-center"
+        >
+          <Text className="text-gold font-bold">Editer le profil</Text>
+        </TouchableOpacity>
+
+        {/* Preferences Section */}
+        <Text className="text-lg font-JakartaBold mt-8 mb-4">Preferences</Text>
+        <View className="bg-white rounded-lg shadow-sm shadow-neutral-300 p-4">
+          {/* Dark Mode */}
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="ml-3 text-gray-700">Dark Mode</Text>
+            <Switch
+              value={form.darkMode}
+              onValueChange={(value) => togglePreference("darkMode", value)}
             />
+          </View>
 
-            <InputField
-              label="Last name"
-              placeholder={user?.lastName || "Not Found"}
-              containerStyle="w-full"
-              inputStyle="p-3.5"
-              editable={false}
-            />
-
-            <InputField
-              label="Email"
-              placeholder={
-                user?.primaryEmailAddress?.emailAddress || "Not Found"
+          {/* Email Notifications */}
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="ml-3 text-gray-700">Email Notifications</Text>
+            <Switch
+              value={form.emailNotifications}
+              onValueChange={(value) =>
+                togglePreference("emailNotifications", value)
               }
-              containerStyle="w-full"
-              inputStyle="p-3.5"
-              editable={false}
             />
+          </View>
 
-            <InputField
-              label="Phone"
-              placeholder={user?.primaryPhoneNumber?.phoneNumber || "Not Found"}
-              containerStyle="w-full"
-              inputStyle="p-3.5"
-              editable={false}
+          {/* Push Notifications */}
+          <View className="flex-row items-center justify-between mb-4">
+            <Text className="ml-3 text-gray-700">Push Notifications</Text>
+            <Switch
+              value={form.pushNotifications}
+              onValueChange={(value) =>
+                togglePreference("pushNotifications", value)
+              }
             />
           </View>
         </View>
+
+        {/* Footer */}
+        <Text className="text-center text-gray-500 mt-10">
+          Made with ❤️ in Lyon, France
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );

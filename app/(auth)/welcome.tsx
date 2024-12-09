@@ -28,10 +28,10 @@ const Home = () => {
         ref={swiperRef}
         loop={false}
         dot={
-          <View className="w-[32px] h-[4px] mx-1 bg-[#E2E8F0] rounded-full" />
+          <View className="w-[32px] h-[4px] mx-1 bg-gray-300 rounded-full" />
         }
         activeDot={
-          <View className="w-[32px] h-[4px] mx-1 bg-[#0286FF] rounded-full" />
+          <View className="w-[32px] h-[4px] mx-1 bg-gold rounded-full" />
         }
         onIndexChanged={(index) => setActiveIndex(index)}
       >
@@ -54,15 +54,21 @@ const Home = () => {
         ))}
       </Swiper>
 
-      <CustomButton
-        title={isLastSlide ? "Get Started" : "Next"}
+      <TouchableOpacity
         onPress={() =>
           isLastSlide
             ? router.replace("/(auth)/sign-up")
             : swiperRef.current?.scrollBy(1)
         }
-        className="w-11/12 mt-10 mb-5"
-      />
+        activeOpacity={0.8} // Adds a smoother press effect
+        className="w-full px-5 mb-10"
+      >
+        <View className="flex-row items-center justify-center bg-gray-900 rounded-lg p-4">
+          <Text className="text-gold font-semibold text-lg">
+            {isLastSlide ? "Get Started" : "Next"}
+          </Text>
+        </View>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };

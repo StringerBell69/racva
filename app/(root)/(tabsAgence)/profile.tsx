@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useUser } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import {
   SafeAreaView,
   ScrollView,
@@ -9,17 +9,27 @@ import {
   Switch,
   Image,
 } from "react-native";
-// import FeatherIcon from "react-native-vector-icons/Feather";
 import { icons } from "@/constants";
-
+import { router } from "expo-router";
 
 const Profile = () => {
+  const { signOut } = useAuth();
   const { user } = useUser();
+
   const [form, setForm] = useState({
     darkMode: false,
     emailNotifications: true,
     pushNotifications: false,
   });
+
+  const handleSignOut = () => {
+    signOut();
+    router.replace("/(auth)/sign-in");
+  };
+
+  const togglePreference = (key: string, value: boolean) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
@@ -29,11 +39,23 @@ const Profile = () => {
       >
         <Text className="text-2xl font-JakartaBold my-5">Settings</Text>
 
+        {/* Sign-Out Button */}
+        <TouchableOpacity
+          onPress={handleSignOut}
+          className="justify-center items-center w-12 h-12 rounded-full bg-white"
+          accessibilityLabel="Sign Out"
+        >
+          <Image source={icons.out} className="w-6 h-6" />
+        </TouchableOpacity>
+
         {/* Profile Section */}
         <View className="flex items-center justify-center my-5">
           <Image
             source={{
-              uri: user?.externalAccounts[0]?.imageUrl ?? user?.imageUrl,
+              uri:
+                user?.externalAccounts[0]?.imageUrl ||
+                user?.imageUrl ||
+                "https://via.placeholder.com/110",
             }}
             style={{ width: 110, height: 110, borderRadius: 55 }}
             className="border-[3px] border-white shadow-sm shadow-neutral-300"
@@ -46,11 +68,8 @@ const Profile = () => {
           {user?.primaryEmailAddress?.emailAddress || "user@example.com"}
         </Text>
 
-        <TouchableOpacity
-          onPress={() => {
-            /* Handle edit profile navigation */
-          }}
-        >
+        {/* Edit Profile Button */}
+        <TouchableOpacity onPress={() => router.push("/")}>
           <View className="flex-row items-center justify-center bg-blue-500 rounded-lg p-3">
             <Text className="text-white font-semibold mr-2">Edit Profile</Text>
           </View>
@@ -61,42 +80,37 @@ const Profile = () => {
         <View className="bg-white rounded-lg shadow-sm shadow-neutral-300 p-4">
           {/* Dark Mode */}
           <View className="flex-row items-center justify-between mb-4">
-            <View className="flex-row items-center">
-              <Text className="ml-3 text-gray-700">Dark Mode</Text>
-            </View>
+            <Text className="ml-3 text-gray-700">Dark Mode</Text>
             <Switch
               value={form.darkMode}
-              onValueChange={(value) => setForm({ ...form, darkMode: value })}
+              onValueChange={(value) => togglePreference("darkMode", value)}
             />
           </View>
 
           {/* Email Notifications */}
           <View className="flex-row items-center justify-between mb-4">
-            <View className="flex-row items-center">
-              <Text className="ml-3 text-gray-700">Email Notifications</Text>
-            </View>
+            <Text className="ml-3 text-gray-700">Email Notifications</Text>
             <Switch
               value={form.emailNotifications}
               onValueChange={(value) =>
-                setForm({ ...form, emailNotifications: value })
+                togglePreference("emailNotifications", value)
               }
             />
           </View>
 
           {/* Push Notifications */}
           <View className="flex-row items-center justify-between mb-4">
-            <View className="flex-row items-center">
-              <Text className="ml-3 text-gray-700">Push Notifications</Text>
-            </View>
+            <Text className="ml-3 text-gray-700">Push Notifications</Text>
             <Switch
               value={form.pushNotifications}
               onValueChange={(value) =>
-                setForm({ ...form, pushNotifications: value })
+                togglePreference("pushNotifications", value)
               }
             />
           </View>
         </View>
 
+        {/* Footer */}
         <Text className="text-center text-gray-500 mt-10">
           Made with ❤️ in Lyon, France
         </Text>

@@ -1,55 +1,86 @@
 import { useUser } from "@clerk/clerk-expo";
-import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+  ScrollView,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { generateAndDownloadPdf } from "@/components/GeneratePDF";
 
-import RideCard from "@/components/RideCard";
-import { images } from "@/constants";
 import { useFetch } from "@/lib/fetch";
-import { Ride } from "@/types/type";
+import { Rent } from "@/types/type";
 
 const Rides = () => {
   const { user } = useUser();
 
   const {
-    data: recentRides,
-    loading,
-    error,
-  } = useFetch<Ride[]>(`/(api)/ride/${user?.id}`);
+    data: recentRentals,
+    loading: loadingRents,
+    error: errorRents,
+  } = useFetch<Rent[]>(`/(api)/cars/rents/allRentsHome/${user?.id}`);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <FlatList
-        data={recentRides}
-        renderItem={({ item }) => <RideCard ride={item} />}
-        keyExtractor={(item, index) => index.toString()}
-        className="px-5"
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{
-          paddingBottom: 100,
-        }}
-        ListEmptyComponent={() => (
-          <View className="flex flex-col items-center justify-center">
-            {!loading ? (
-              <>
-                <Image
-                  source={images.noResult}
-                  className="w-40 h-40"
-                  alt="No recent rides found"
-                  resizeMode="contain"
-                />
-                <Text className="text-sm">No recent rides? found</Text>
-              </>
-            ) : (
-              <ActivityIndicator size="small" color="#000" />
-            )}
-          </View>
-        )}
-        ListHeaderComponent={
-          <>
-            <Text className="text-2xl font-JakartaBold my-5">All Rides</Text>
-          </>
-        }
-      />
+      {/* ScrollView wrapping the content with padding */}
+      <ScrollView
+        className="flex-1 pt-4 px-4"
+        contentContainerStyle={{ paddingBottom: 75 }} // Ensure extra space at the bottom
+      >
+        {/* Recent Rentals Section */}
+        <View className="mb-4">
+          <Text className="text-lg font-bold mb-2">Recent rentals</Text>
+          {recentRentals && recentRentals.length > 0 ? (
+            recentRentals.map((rent, index) => {
+              const { renter, amount, paid, date, date_end } = rent;
+              const startDate = new Date(date);
+              const endDate = new Date(date_end);
+              const daysDifference =
+                (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+
+              return (
+                <View
+                  key={index}
+                  className="flex-row justify-between items-center p-4 border border-gray-200 rounded-lg mb-2"
+                >
+                  <View>
+                    <Text className="text-base font-semibold">{renter}</Text>
+                    <Text className="text-sm text-gray-600">
+                      Dates: {startDate.toLocaleDateString()} -{" "}
+                      {endDate.toLocaleDateString()} ({daysDifference} jours)
+                    </Text>
+                    <Text className="text-sm">
+                      Paid: {paid ? amount : "Not paid"} €
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    className="bg-gold-dark py-1 px-3 rounded-full "
+                    onPress={() =>
+                      generateAndDownloadPdf(
+                        renter,
+                        amount,
+                        paid,
+                        date,
+                        date_end,
+                        `Rental_Contract_${renter}_${endDate.toLocaleDateString()}`
+                      )
+                    }
+                  >
+                    <Text className="text-white text-center text-sm">
+                      contrat
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })
+          ) : (
+            <Text className="text-sm text-gray-600">No recent rides</Text>
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };

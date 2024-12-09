@@ -26,33 +26,8 @@ export async function POST(request: Request) {
     }
 
     const sql = neon(`${process.env.DATABASE_URL}`);
-    console.log(`
-     INSERT INTO rentals (
-    rental_id,
-    voiture_id, 
-    customer_id, 
-    agence_id, 
-    rental_start, 
-    rental_end, 
-    amount, 
-    paid, 
-    status, 
-    created_at
-)
-VALUES (
-    (SELECT MAX(rental_id) FROM rentals)+1,
-    ${id_voiture}, 
-    (SELECT id FROM users WHERE clerk_id ='${user_id}'), 
-    ${id_agence}, 
-    '${start}', 
-    '${end}', 
-    ${amount},
-      TRUE, 
-    'upcoming', 
-    CURRENT_TIMESTAMP
-)RETURNING *;
+    
 
-    `);
     const response = await sql`
     INSERT INTO rentals (
       rental_id,

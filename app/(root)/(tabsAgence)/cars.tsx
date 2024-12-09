@@ -6,6 +6,7 @@ import {
   Text,
   View,
   StatusBar,
+  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Cbutton from "@/components/Cbutton"; // Adjust the import path accordingly
@@ -21,14 +22,12 @@ const Cars = () => {
   const { user } = useUser();
   const { setCar } = useCarStore();
   const [refreshing, setRefreshing] = useState(false);
-console.log("userid",user?.id)
   const {
     data: allCars,
     loading,
     error,
     refetch, // Refetch function to reload data
   } = useFetch<Car[]>(`/(api)/cars/${user?.id}`);
-console.log("allcars", allCars);
   const handleCardPress = (car: Car) => {
     setCar(car);
     router.push(`/(pages)/carsAction/modifyCar`);
@@ -85,12 +84,12 @@ console.log("allcars", allCars);
           <>
             <View className="flex flex-row items-center justify-between my-5">
               <Text className="text-2xl font-bold">My Cars</Text>
-              <Cbutton
-                title="Add New Car"
-                bgVariant="primary"
-                textVariant="default"
+              <TouchableOpacity
+                className="bg-gold-dark py-1 px-3 rounded-full"
                 onPress={handleCreate}
-              />
+              >
+                <Text className="text-white text-center text-sm">New Car</Text>
+              </TouchableOpacity>
             </View>
           </>
         }

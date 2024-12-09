@@ -65,15 +65,13 @@ const CarsCard = ({
         {/* Column for pricing and rating (Right Side) */}
         <View className="flex flex-col items-end items-start justify-start">
           {/* Pricing */}
-          <Text className="text-md font-JakartaMedium text-blue-500">
+          <Text className="text-md font-JakartaMedium text-dark">
             {`Day: ${voiture.price_per_day} €`}
           </Text>
-          <Text className="text-md font-JakartaMedium text-blue-500">
-            {`Week: ${voiture.price_per_week} €`}
+          <Text className="text-md font-JakartaMedium text-dark">
+            {`Weekend / D: ${voiture.price_per_week} €`}
           </Text>
-          <Text className="text-md font-JakartaMedium text-blue-500">
-            {`Weekend: ${voiture.price_full_weekend} €`}
-          </Text>
+         
         </View>
       </View>
     </TouchableOpacity>

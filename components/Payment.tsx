@@ -45,7 +45,7 @@ const Payment = ({
       intentConfiguration: {
         mode: {
           amount: parseInt(amount) * 100,
-          currencyCode: "usd",
+          currencyCode: "eur",
         },
         confirmHandler: async (
           paymentMethod,

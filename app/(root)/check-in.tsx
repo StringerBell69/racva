@@ -42,7 +42,6 @@ const CarDetailsScreen = () => {
         `/(api)/cars/check-in/${id_agence}?carId=${id_voiture}`
       );
       const result = await response.json();
-      console.log(result);
       setCarData(result.data[0] || {});
 
     } catch (error) {

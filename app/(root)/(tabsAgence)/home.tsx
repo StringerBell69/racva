@@ -152,7 +152,7 @@ const Home = () => {
                     </Text>
                   </View>
                   <TouchableOpacity
-                    className="bg-blue-500 py-1 px-3 rounded-full"
+                    className="bg-gold py-1 px-3 rounded-full"
                     onPress={() =>
                       generateAndDownloadPdf(
                         renter,
