@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,14 +6,19 @@ import {
   ScrollView,
   Image,
   SafeAreaView,
+  ActivityIndicator,
+  Pressable,
+  Alert,
 } from "react-native";
-import Swiper from "react-native-swiper"; // Import Swiper
+import Swiper from "react-native-swiper";
 import { router } from "expo-router";
 import { useCarStore } from "@/store";
 import { icons, images } from "@/constants";
 import { useFetch } from "@/lib/fetch";
 import { Rent, Earnings } from "@/types/type";
-import Cbutton from "@/components/Cbutton"; // Adjust the import path accordingly
+import { Feather, Ionicons } from "@expo/vector-icons";
+import { generateAndDownloadPdf } from "@/components/GeneratePDF";
+import { Calendar } from "react-native-calendars"; // Assuming you're using a calendar component
 
 const ModifyCar: React.FC = () => {
   const { car } = useCarStore();
@@ -29,6 +34,7 @@ const ModifyCar: React.FC = () => {
     loading: loadingEarnings,
     error: errorEarnings,
   } = useFetch<Earnings[]>(`/(api)/cars/paid/${car?.id_voiture}`);
+
   const {
     data: recentRentals,
     loading: loadingRents,
@@ -41,6 +47,12 @@ const ModifyCar: React.FC = () => {
 
   const isLoading = loadingLastRent || loadingEarnings || loadingRents;
   const errorMessage = errorLastRent || errorEarnings || errorRents;
+
+  const [selectedDateRange, setSelectedDateRange] = useState<{ start?: string; end?: string }>({});
+  const [markedDates, setMarkedDates] = useState<any>({});
+
+  const total =
+    (car?.price_per_day || 0) * 5 + (car?.price_full_weekend || 0) * 2;
 
   if (!car) {
     return (
@@ -60,11 +72,8 @@ const ModifyCar: React.FC = () => {
     router.push("/(pages)/carsAction/edit");
   };
 
-  const total =
-    (car.price_per_day || 0) * 5 + (car.price_full_weekend || 0) * 2;
-
   if (isLoading) {
-    return <Text>Loading...</Text>;
+    return <ActivityIndicator size="large" color="#FFD700" />;
   }
 
   if (errorMessage) {
@@ -91,38 +100,118 @@ const ModifyCar: React.FC = () => {
     (url) => url // Ensure we only use defined photo URLs
   );
 
+  const handleDayPress = (day: { dateString: string }) => {
+    const { dateString } = day;
+
+    // Check if the day is disabled (booked)
+    if (markedDates[dateString]?.disabled) {
+      return;
+    }
+
+    const updatedMarkedDates = { ...markedDates };
+
+    if (!selectedDateRange.start) {
+      // First selection
+      setSelectedDateRange({ start: dateString });
+      updatedMarkedDates[dateString] = {
+        startingDay: true,
+        color: "#D4AF37",
+        textColor: "black",
+      };
+    } else if (!selectedDateRange.end) {
+      // Second selection (end date)
+      let start = new Date(selectedDateRange.start);
+      let end = new Date(dateString);
+
+      if (end < start) {
+        [start, end] = [end, start];
+      }
+
+      // Check for any booked days in the range
+      const currentDate = new Date(start);
+      const hasBookedDays = [];
+      while (currentDate <= end) {
+        const checkDate = currentDate.toISOString().split("T")[0];
+        if (markedDates[checkDate]?.disabled) {
+          hasBookedDays.push(checkDate);
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      if (hasBookedDays.length > 0) {
+        Alert.alert(
+          "Invalid Selection",
+          "Some dates in your selected range are already booked."
+        );
+        return;
+      }
+
+      // Mark the date range
+      const selectedDates: string[] = [];
+      currentDate.setDate(start.getDate());
+      while (currentDate <= end) {
+        const checkDate = currentDate.toISOString().split("T")[0];
+        selectedDates.push(checkDate);
+
+        updatedMarkedDates[checkDate] = {
+          color: "#D4AF37",
+          textColor: "black",
+          ...(checkDate === start.toISOString().split("T")[0] && {
+            startingDay: true,
+          }),
+          ...(checkDate === end.toISOString().split("T")[0] && {
+            endingDay: true,
+          }),
+        };
+
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      setSelectedDateRange({ start: selectedDateRange.start, end: dateString });
+    } else {
+      // Reset selection
+      const resetMarkedDates = { ...markedDates };
+
+      // Remove selection marking from previously selected dates
+      Object.keys(resetMarkedDates).forEach((date) => {
+        if (resetMarkedDates[date]?.color === "#D4AF37") {
+          delete resetMarkedDates[date];
+        }
+      });
+
+      setSelectedDateRange({});
+      setMarkedDates(resetMarkedDates);
+      return;
+    }
+
+    setMarkedDates(updatedMarkedDates);
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="bg-white p-4">
         {/* Header */}
         <View className="flex-row items-center justify-between p-4 bg-white">
-          <View className="flex-row items-center">
-            <TouchableOpacity onPress={() => router.back()}>
-              <View className="p-2 rounded-full bg-gray-200">
-                <Image source={icons.backArrow} className="w-6 h-6" />
-              </View>
-            </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.back()} className="flex-row items-center">
+            <View className="p-2 rounded-full bg-gold">
+              <Image source={icons.backArrow} className="w-6 h-6" />
+            </View>
             <Text className="ml-4 text-xl font-bold text-gray-800">
-              {"Go Back"}
+              Go Back
             </Text>
-          </View>
+          </TouchableOpacity>
 
-          <Cbutton
-            title="Edit Car"
-            bgVariant="primary"
-            textVariant="default"
-            onPress={handleCreate}
-          />
+          <TouchableOpacity onPress={handleCreate}>
+            <View className="flex-row items-center justify-center bg-gold rounded-lg p-2">
+              <Feather name="edit" size={24} color="black" />
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Swipeable Photo Gallery */}
         {carPhotos.length > 0 ? (
           <View className="mb-4">
-            <Swiper
-              style={{ height: 200 }}
-              showsButtons={false}
-              
-            >
+            <Swiper style={{ height: 200 }} showsButtons={false}>
               {carPhotos.map((photo, index) => (
                 <View key={index} className="flex-1">
                   <Image
@@ -162,17 +251,28 @@ const ModifyCar: React.FC = () => {
                   latestRent.status === "ongoing"
                     ? "bg-green-500"
                     : latestRent.status === "ended"
-                      ? "bg-gray-500"
-                      : latestRent.status === "cancelled"
-                        ? "bg-red-500"
-                        : "bg-blue-500"
+                    ? "bg-gray-500"
+                    : latestRent.status === "cancelled"
+                    ? "bg-red-500"
+                    : "bg-blue-500"
                 }`}
               />
               <TouchableOpacity
-                className="bg-sky-400 py-1 px-3 rounded-full"
-                onPress={() => alert("Creating PDF Contract...")}
+                className="bg-gold-dark py-1 px-3 rounded-full"
+                onPress={() =>
+                  generateAndDownloadPdf(
+                    latestRent.renter,
+                    latestRent.amount,
+                    latestRent.paid,
+                    latestRent.date,
+                    latestRent.date_end,
+                    `Rental_Contract_${latestRent.renter}_${endDate.toLocaleDateString()}`
+                  )
+                }
               >
-                <Text className="text-white text-center text-sm">PDF</Text>
+                <Text className="text-white text-center text-sm">
+                  <Ionicons name="document-text" size={16} color="white" />
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -192,19 +292,15 @@ const ModifyCar: React.FC = () => {
           <Text className="text-lg font-bold mb-2">Rentabilité</Text>
           <View className="h-4 w-full bg-gray-300 rounded-full">
             <View
-              className={`h-4 rounded-full bg-green-500`}
+              className={`h-4 rounded-full ${actualEarnings > total ? 'bg-blue-500' : 'bg-green-500'}`}
               style={{
-                width: `${(actualEarnings / total) * 100}%`,
+                width: `${Math.min((actualEarnings / total) * 100, 100)}%`,
               }}
             />
           </View>
           <Text className="text-sm text-gray-600 mt-2">
-            {actualEarnings} /{" "}
-            {(
-              (car.price_per_day || 0) * 5 +
-              (car.price_full_weekend || 0) * 2
-            ).toFixed(2)}{" "}
-            € cette semaine
+            {actualEarnings} / {total.toFixed(2)} € cette semaine
+            {actualEarnings > total && " (Objectif dépassé!)"}
           </Text>
         </View>
 
@@ -215,8 +311,7 @@ const ModifyCar: React.FC = () => {
               const { renter, amount, paid, date, date_end } = rent;
               const startDate = new Date(date);
               const endDate = new Date(date_end);
-              const Difference =
-                (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+              const Difference = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
               const daysDifference = Difference === 0 ? 1 : Difference;
 
               return (
@@ -235,20 +330,27 @@ const ModifyCar: React.FC = () => {
                     </Text>
                   </View>
                   <TouchableOpacity
-                    className="bg-blue-500 py-1 px-3 rounded-full"
+                    className="bg-gold-dark py-1 px-3 rounded-full"
                     onPress={() =>
-                      alert(`Downloading contract for ${renter}...`)
+                      generateAndDownloadPdf(
+                        renter,
+                        amount,
+                        paid,
+                        date,
+                        date_end,
+                        `Rental_Contract_${renter}_${endDate.toLocaleDateString()}`
+                      )
                     }
                   >
-                    <Text className="text-white text-center text-sm">PDF</Text>
+                    <Text className="text-white text-center text-sm">
+                      <Ionicons name="document-text" size={16} color="white" />
+                    </Text>
                   </TouchableOpacity>
                 </View>
               );
             })
           ) : (
-            <Text className="text-sm text-gray-600">
-              Aucun location récente trouvée.
-            </Text>
+            <Text className="text-sm text-gray-600">Aucune location récente trouvée.</Text>
           )}
         </View>
       </ScrollView>

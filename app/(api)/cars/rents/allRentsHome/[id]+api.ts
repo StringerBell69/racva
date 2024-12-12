@@ -18,7 +18,7 @@ export async function GET(request: Request, { id }: { id: string }) {
           users ON rentals.customer_id = users.id
       WHERE rentals.agence_id = (Select id_agence from users where clerk_id = ${id})
       ORDER BY 
-          rentals.cretated_at DESC
+          rentals.created_at DESC
           ;`;
     return Response.json({ data: response });
   } catch (error) {

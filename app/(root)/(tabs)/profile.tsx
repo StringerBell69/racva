@@ -69,7 +69,7 @@ const Profile = () => {
           {user?.primaryEmailAddress?.emailAddress || "user@example.com"}
         </Text>
 
-        {/* Edit Profile Button */}
+        {/* Edit Profile Button 
         <TouchableOpacity
           onPress={() => router.push(`/chat`)}
           className="bg-gray-900 rounded-xl p-4 items-center"
@@ -77,10 +77,8 @@ const Profile = () => {
           <Text className="text-gold font-bold">Editer le profil</Text>
         </TouchableOpacity>
 
-        {/* Preferences Section */}
         <Text className="text-lg font-JakartaBold mt-8 mb-4">Preferences</Text>
         <View className="bg-white rounded-lg shadow-sm shadow-neutral-300 p-4">
-          {/* Dark Mode */}
           <View className="flex-row items-center justify-between mb-4">
             <Text className="ml-3 text-gray-700">Dark Mode</Text>
             <Switch
@@ -89,7 +87,6 @@ const Profile = () => {
             />
           </View>
 
-          {/* Email Notifications */}
           <View className="flex-row items-center justify-between mb-4">
             <Text className="ml-3 text-gray-700">Email Notifications</Text>
             <Switch
@@ -100,7 +97,6 @@ const Profile = () => {
             />
           </View>
 
-          {/* Push Notifications */}
           <View className="flex-row items-center justify-between mb-4">
             <Text className="ml-3 text-gray-700">Push Notifications</Text>
             <Switch
@@ -110,7 +106,7 @@ const Profile = () => {
               }
             />
           </View>
-        </View>
+        </View> */}
 
         {/* Footer */}
         <Text className="text-center text-gray-500 mt-10">

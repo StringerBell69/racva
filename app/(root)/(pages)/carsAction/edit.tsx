@@ -20,6 +20,11 @@ import { useCarStore } from "@/store";
 import Cbutton from "@/components/Cbutton"; // Adjust the import path accordingly
 
 const edit = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
+
+  
+
+
+
   const { car } = useCarStore();
   const [make, setMake] = useState(car?.marque || "");
   const [model, setModel] = useState(car?.modele || "");
@@ -132,10 +137,14 @@ const edit = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
       <StatusBar barStyle="dark-content" backgroundColor="white" />
 
       <View className="flex-row items-center p-4 bg-white">
-        <TouchableOpacity onPress={() => router.back()}>
-          <View className="p-2 rounded-full bg-gray-200">
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="flex-row items-center"
+        >
+          <View className="p-2 rounded-full bg-gold">
             <Image source={icons.backArrow} className="w-6 h-6" />
           </View>
+          <Text className="ml-4 text-xl font-bold text-gray-800"></Text>
         </TouchableOpacity>
         <Text className="ml-4 text-xl font-bold text-gray-800">
           {title || "Go Back"}
@@ -208,20 +217,13 @@ const edit = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
           ))}
         </Picker>
 
-        <Text className="text-lg text-gray-700 mb-2">Available</Text>
-        <Switch
-          value={available}
-          onValueChange={setAvailable}
-          className="mb-4"
-        />
-
-        <Cbutton
-          title={isLoading ? "Saving..." : "Save Changes"}
-          bgVariant="primary"
-          textVariant="default"
-          onPress={handleSave}
-        />
-       
+        <TouchableOpacity onPress={handleSave}>
+          <View className="flex-row items-center justify-center bg-gray-900 rounded-lg p-2">
+            <Text className="text-gold text-center text-sm">
+              {isLoading ? "Saving..." : "Save Changes"}
+            </Text>
+          </View>
+        </TouchableOpacity>
       </View>
     </CarsLayout>
   );

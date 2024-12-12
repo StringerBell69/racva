@@ -2,12 +2,7 @@ import { useUser } from "@clerk/clerk-expo";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import { useState, useEffect } from "react";
-import {
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { Text, View, TouchableOpacity, ScrollView } from "react-native";
 import RideLayout from "@/components/RideLayout";
 import { generateAndDownloadPdf } from "@/components/GeneratePDF";
 
@@ -16,10 +11,11 @@ import CustomInput from "@/components/CustomTextInput";
 import { useFetch } from "@/lib/fetch";
 import { useLocationStore } from "@/store";
 import { Rent, HomeProps } from "@/types/type";
+import { Ionicons } from "@expo/vector-icons";
 const Home: React.FC<HomeProps> = ({ title }) => {
   const { user } = useUser();
-const [searchText, setSearchText] = useState("");
-const [isInputFocused, setIsInputFocused] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const dynamicTitle =
     title || (user?.firstName ? `Hey ${user.firstName} 👋` : "Hey 👋");
@@ -57,8 +53,6 @@ const [isInputFocused, setIsInputFocused] = useState(false);
     })();
   }, []);
 
-  
-
   const handleInputChange = (text: string) => {
     setSearchText(text);
   };
@@ -80,7 +74,7 @@ const [isInputFocused, setIsInputFocused] = useState(false);
         </View>
         {/* Recent Rentals Section */}
         <View className="pt-4 mb-4">
-          <Text className="text-lg font-bold mb-2">Recent Rentals</Text>
+          <Text className="text-lg font-bold mb-2">Last Rental</Text>
           {recentRentals && recentRentals.length > 0 ? (
             recentRentals.map((rent, index) => {
               const { renter, amount, paid, date, date_end } = rent;
@@ -117,7 +111,10 @@ const [isInputFocused, setIsInputFocused] = useState(false);
                       )
                     }
                   >
-                    <Text className="text-white text-center text-sm">PDF</Text>
+                    <Text className="text-white text-center text-sm">
+                      
+                      <Ionicons name="document-text" size={16} color="white" />
+                    </Text>
                   </TouchableOpacity>
                 </View>
               );

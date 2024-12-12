@@ -12,6 +12,7 @@ import { useFetch } from "@/lib/fetch";
 import { useLocationStore } from "@/store";
 import { Rent } from "@/types/type";
 import * as Sharing from "expo-sharing";
+import { Ionicons } from "@expo/vector-icons";
 
 
 const Home = () => {
@@ -163,7 +164,9 @@ const Home = () => {
                       )
                     }
                   >
-                    <Text className="text-white text-center text-sm">PDF</Text>
+                    <Text className="text-white text-center text-sm">
+                      <Ionicons name="document-text" size={16} color="white" />
+                    </Text>
                   </TouchableOpacity>
                 </View>
               );

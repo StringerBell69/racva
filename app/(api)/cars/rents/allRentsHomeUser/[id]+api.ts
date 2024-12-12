@@ -17,9 +17,8 @@ export async function GET(request: Request, { id }: { id: string }) {
       JOIN 
           users ON rentals.customer_id = users.id
       ORDER BY 
-          rentals.cretated_at DESC
-          OFFSET 1
-      LIMIT 5;`;
+          rentals.created_at DESC
+      LIMIT 1;`;
     return Response.json({ data: response });
   } catch (error) {
     console.error("Error fetching recent cars:", error);

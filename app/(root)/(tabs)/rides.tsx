@@ -13,6 +13,7 @@ import { generateAndDownloadPdf } from "@/components/GeneratePDF";
 
 import { useFetch } from "@/lib/fetch";
 import { Rent } from "@/types/type";
+import { Ionicons } from "@expo/vector-icons";
 
 const Rides = () => {
   const { user } = useUser();
@@ -70,7 +71,8 @@ const Rides = () => {
                     }
                   >
                     <Text className="text-white text-center text-sm">
-                      contrat
+                      
+                      <Ionicons name="document-text" size={16} color="white" />
                     </Text>
                   </TouchableOpacity>
                 </View>
