@@ -296,6 +296,7 @@ const ModifyCar: React.FC = () => {
   const handleMessageClient = (id: string) => {
     router.push(`/(tabsAgence)/chat?clientId=${id}`);
   };
+const apiKey = process.env.SENDINBLUE_API_KEY;
 
   const handleCancelRental = async (rent: Rent) => {
     console.log(rent);
@@ -333,8 +334,7 @@ WHERE id_voiture = ${car?.id_voiture}
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
-                    "api-key":
-                      "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",
+                    "api-key": apiKey!,
                   },
                   body: JSON.stringify({
                     sender: { email: "annulation@racva.com" },
