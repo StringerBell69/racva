@@ -314,7 +314,7 @@ const apiKey = process.env.SENDINBLUE_API_KEY;
             const emailData = {
               to: "dspro699@gmail.com",
               subject: "Notification d'annulation de location",
-              body: `Une location a été annulée. Détails:
+              body: `Une location a été annulée. Détails: 
 Voiture ID: ${car?.id_voiture}
 Date de début de location: ${rent.date || rent.rental_start_date}
 Date de fin de location: ${rent.date_end || rent.rental_end_date}
