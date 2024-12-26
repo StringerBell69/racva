@@ -37,18 +37,18 @@ const Profile = () => {
         contentContainerStyle={{ paddingBottom: 120 }}
         className="px-5"
       >
-        <Text className="text-2xl font-JakartaBold my-5">Settings</Text>
+        <Text className="text-2xl font-JakartaBold my-5">Paramètres</Text>
 
-        {/* Sign-Out Button */}
+        {/* Bouton de déconnexion */}
         <TouchableOpacity
           onPress={handleSignOut}
           className="justify-center items-center w-12 h-12 rounded-full bg-white"
-          accessibilityLabel="Sign Out"
+          accessibilityLabel="Se déconnecter"
         >
           <Image source={icons.out} className="w-6 h-6" />
         </TouchableOpacity>
 
-        {/* Profile Section */}
+        {/* Section du profil */}
         <View className="flex items-center justify-center my-5">
           <Image
             source={{
@@ -62,34 +62,34 @@ const Profile = () => {
           />
         </View>
         <Text className="text-lg font-semibold text-center my-2">
-          {user?.fullName || "User Name"}
+          {user?.fullName || "Nom de l'utilisateur"}
         </Text>
         <Text className="text-sm text-gray-500 text-center mb-5">
-          {user?.primaryEmailAddress?.emailAddress || "user@example.com"}
+          {user?.primaryEmailAddress?.emailAddress || "utilisateur@example.com"}
         </Text>
 
-        {/* Edit Profile Button */}
+        {/* Bouton d'édition du profil */}
         <TouchableOpacity onPress={() => router.push("/")}>
           <View className="flex-row items-center justify-center bg-blue-500 rounded-lg p-3">
-            <Text className="text-white font-semibold mr-2">Edit Profile</Text>
+            <Text className="text-white font-semibold mr-2">Éditer le profil</Text>
           </View>
         </TouchableOpacity>
 
-        {/* Preferences Section */}
-        <Text className="text-lg font-JakartaBold mt-8 mb-4">Preferences</Text>
+        {/* Section des préférences */}
+        <Text className="text-lg font-JakartaBold mt-8 mb-4">Préférences</Text>
         <View className="bg-white rounded-lg shadow-sm shadow-neutral-300 p-4">
-          {/* Dark Mode */}
+          {/* Mode sombre */}
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="ml-3 text-gray-700">Dark Mode</Text>
+            <Text className="ml-3 text-gray-700">Mode sombre</Text>
             <Switch
               value={form.darkMode}
               onValueChange={(value) => togglePreference("darkMode", value)}
             />
           </View>
 
-          {/* Email Notifications */}
+          {/* Notifications par email */}
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="ml-3 text-gray-700">Email Notifications</Text>
+            <Text className="ml-3 text-gray-700">Notifications par email</Text>
             <Switch
               value={form.emailNotifications}
               onValueChange={(value) =>
@@ -98,9 +98,9 @@ const Profile = () => {
             />
           </View>
 
-          {/* Push Notifications */}
+          {/* Notifications push */}
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="ml-3 text-gray-700">Push Notifications</Text>
+            <Text className="ml-3 text-gray-700">Notifications push</Text>
             <Switch
               value={form.pushNotifications}
               onValueChange={(value) =>
@@ -110,9 +110,9 @@ const Profile = () => {
           </View>
         </View>
 
-        {/* Footer */}
+        {/* Pied de page */}
         <Text className="text-center text-gray-500 mt-10">
-          Made with ❤️ in Lyon, France
+          Fait avec ❤️ à Lyon, France
         </Text>
       </ScrollView>
     </SafeAreaView>

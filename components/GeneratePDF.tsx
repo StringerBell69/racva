@@ -1,19 +1,72 @@
-
 import * as Sharing from "expo-sharing";
 import * as Print from "expo-print";
-export const generateAndDownloadPdf = async (
-  renter: string,
-  amount: number,
-  paid: boolean,
-  date: string,
-  date_end: string,
-  filename: string
-) => {
+
+interface ContractData {
+  // Company details
+  companyName?: string;
+  companyAddress?: string;
+  companyPhone?: string;
+  companySiret?: string;
+  companyEmail?: string;
+  contractNumber?: string;
+
+  // Renter details
+  renterFirstName: string;
+  renterLastName?: string;
+  renterAddress?: string;
+  renterPhone?: string;
+  renterEmail?: string;
+  driverLicense?: string;
+
+  // Vehicle details
+  vehicleBrand?: string;
+  vehicleModel?: string;
+  vehiclePlate?: string;
+  initialMileage?: number;
+  vehicleCondition?: string;
+
+  // Rental details
+  startDate: string;
+  endDate: string;
+  pickupLocation?: string;
+  returnLocation?: string;
+  rentalPrice: number;
+  deposit?: number;
+  mileageLimit?: string;
+  extraKmPrice?: number;
+  isPaid: boolean;
+  paymentMethod?: string;
+}
+
+export const generateAndDownloadPdf = async (data: ContractData) => {
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
+    }).format(price);
+  };
+
   const htmlContent = `
+  <!DOCTYPE html>
   <html>
     <head>
-     <style>
-        /* Resetting basic styles for clean output */
+      <meta charset="UTF-8">
+      <style>
+        @page {
+          margin: 15mm;
+          size: A4;
+        }
+        
         * {
           box-sizing: border-box;
           margin: 0;
@@ -22,210 +75,204 @@ export const generateAndDownloadPdf = async (
 
         body {
           font-family: 'Arial', sans-serif;
-          background-color: #f3f4f6;
           color: #333;
           line-height: 1.6;
-          margin: 0;
-          padding: 0;
+          background-color: white;
         }
 
-        /* Contract Wrapper */
+        .page-break {
+          page-break-before: always;
+        }
+
         .contract {
-          max-width: 800px;
-          margin: 20px auto;
-          padding: 25px;
-          background-color: #ffffff;
-          border: 1px solid #d1d5db;
-          border-radius: 8px;
-          box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+          max-width: 100%;
+          margin: 0 auto;
+          padding: 20px;
+        }
+
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+          border-bottom: 3px solid #1a365d;
+          padding-bottom: 20px;
         }
 
         h1 {
-          color: #1f2937;
-          text-align: center;
-          font-size: 2em;
+          color: #1a365d;
+          font-size: 24px;
+          margin-bottom: 15px;
+        }
+
+        .section-title {
+          font-size: 18px;
+          color: #1a365d;
+          border-bottom: 2px solid #e2e8f0;
+          padding-bottom: 8px;
+          margin: 25px 0 15px 0;
+        }
+
+        .details {
           margin-bottom: 20px;
         }
 
-        /* Section Title */
-        .section-title {
-          font-size: 1.3em;
-          color: #4b5563;
-          border-bottom: 2px solid #d1d5db;
-          padding-bottom: 6px;
-          margin-top: 20px;
-          margin-bottom: 12px;
-        }
-
-        /* Details Formatting */
         .details p {
-          font-size: 0.95em;
+          font-size: 14px;
           margin-bottom: 8px;
-          color: #374151;
+          color: #2d3748;
         }
         
         .details strong {
-          color: #1f2937;
+          color: #1a365d;
         }
 
-        /* Table Styling */
         table {
           width: 100%;
           border-collapse: collapse;
-          margin-top: 15px;
+          margin: 15px 0;
+          font-size: 14px;
         }
 
         th, td {
-          padding: 10px;
+          padding: 12px;
           text-align: left;
-          border: 1px solid #d1d5db;
+          border: 1px solid #e2e8f0;
         }
 
         th {
-          background-color: #f3f4f6;
-          color: #1f2937;
+          background-color: #f8fafc;
+          color: #1a365d;
           font-weight: 600;
         }
 
-        td {
-          background-color: #ffffff;
-          color: #4b5563;
-        }
-
-        /* Signature Block */
-        .signature {
+        .signature-section {
+          margin-top: 40px;
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          margin-top: 30px;
         }
 
-        .signature div {
+        .signature-box {
           width: 45%;
-          text-align: center;
-        }
-
-        .signature p {
-          font-size: 0.9em;
-          color: #374151;
         }
 
         .signature-line {
-          margin-top: 30px;
-          height: 1px;
-          background-color: #6b7280;
+          margin-top: 50px;
+          border-top: 1px solid #2d3748;
+          padding-top: 10px;
+          text-align: center;
+          font-size: 14px;
         }
 
-        /* Footer Note */
-        .footer-note {
-          font-size: 0.85em;
-          color: #6b7280;
-          margin-top: 20px;
+        .footer {
+          margin-top: 30px;
           text-align: center;
+          font-size: 12px;
+          color: #718096;
+        }
+
+        .conditions {
+          font-size: 14px;
+          margin: 20px 0;
+        }
+
+        .conditions p {
+          margin-bottom: 10px;
+          text-align: justify;
         }
       </style>
     </head>
     <body>
-      <h1>Contrat de Location de Véhicule</h1>
       <div class="contract">
-
-        <div class="details">
-          <h2 class="section-title">Entête de la société de location</h2>
-          <p><strong>Nom de la société:</strong> AlzLocation</p>
-          <p><strong>Adresse:</strong> 17 Rue du Sergent Michel Berthet, Lyon</p>
-          <p><strong>Numéro de téléphone:</strong> 04 78 12 55 39</p>
-          <p><strong>Numéro SIRET:</strong> 123 456 789 00012</p>
-          <p><strong>Email:</strong> contact@alzlocation.fr</p>
-          <p><strong>Numéro de contrat:</strong> 1728764361879867</p>
+        <div class="header">
+          <h1>Contrat de Location de Véhicule</h1>
+          <p>N° ${data.contractNumber || "_____________"}</p>
         </div>
 
         <div class="details">
-          <h2 class="section-title">Identification du Locataire</h2>
-          <p><strong>Nom:</strong> Dupont</p>
-          <p><strong>Prénom:</strong> Jean</p>
-          <p><strong>Adresse:</strong> 45 Rue de Rivoli, 75001 Paris</p>
-          <p><strong>Téléphone:</strong> 06 12 34 56 78</p>
-          <p><strong>Email:</strong> jeandupont@email.com</p>
-          <p><strong>Permis de conduire:</strong> ABC123456</p>
+          <h2 class="section-title">Société de Location</h2>
+          <p><strong>Nom de la société:</strong> ${data.companyName || "_____________"}</p>
+          <p><strong>Adresse:</strong> ${data.companyAddress || "_____________"}</p>
+          <p><strong>Téléphone:</strong> ${data.companyPhone || "_____________"}</p>
+          <p><strong>SIRET:</strong> ${data.companySiret || "_____________"}</p>
+          <p><strong>Email:</strong> ${data.companyEmail || "_____________"}</p>
         </div>
 
         <div class="details">
-          <h2 class="section-title">Identification du Véhicule</h2>
-          <p><strong>Marque:</strong> BMW</p>
-          <p><strong>Modèle:</strong> X3</p>
-          <p><strong>Immatriculation:</strong> D2-346-VV</p>
-          <p><strong>Kilométrage au départ:</strong> 15,000 km</p>
-          <p><strong>État au départ:</strong> Conforme / Légères rayures</p>
+          <h2 class="section-title">Informations du Locataire</h2>
+          <p><strong>Nom:</strong> ${data.renterLastName || "_____________"}</p>
+          <p><strong>Prénom:</strong> ${data.renterFirstName}</p>
+          <p><strong>Adresse:</strong> ${data.renterAddress || "_____________"}</p>
+          <p><strong>Téléphone:</strong> ${data.renterPhone || "_____________"}</p>
+          <p><strong>Email:</strong> ${data.renterEmail || "_____________"}</p>
+          <p><strong>Permis de conduire:</strong> ${data.driverLicense || "_____________"}</p>
         </div>
 
         <div class="details">
-          <h2 class="section-title">Informations Générales de la Location</h2>
-          <p><strong>Date de départ:</strong> 15/10/2024, 10:00</p>
-          <p><strong>Date de retour prévue:</strong> 19/10/2024, 10:00</p>
-          <p><strong>Lieu de prise en charge:</strong> 17 Rue du Sergent Michel Berthet, Lyon</p>
-          <p><strong>Lieu de restitution:</strong> Même adresse</p>
+          <h2 class="section-title">Véhicule</h2>
+          <p><strong>Marque:</strong> ${data.vehicleBrand || "_____________"}</p>
+          <p><strong>Modèle:</strong> ${data.vehicleModel || "_____________"}</p>
+          <p><strong>Immatriculation:</strong> ${data.vehiclePlate || "_____________"}</p>
+          <p><strong>Kilométrage initial:</strong> ${data.initialMileage ? `${data.initialMileage} km` : "_____________"}</p>
+          <p><strong>État:</strong> ${data.vehicleCondition || "_____________"}</p>
+        </div>
+
+        <div class="page-break"></div>
+
+        <div class="details">
+          <h2 class="section-title">Détails de la Location</h2>
+          <p><strong>Date de début:</strong> ${formatDate(data.startDate)}</p>
+          <p><strong>Date de fin:</strong> ${formatDate(data.endDate)}</p>
+          <p><strong>Lieu de prise en charge:</strong> ${data.pickupLocation || "_____________"}</p>
+          <p><strong>Lieu de restitution:</strong> ${data.returnLocation || "_____________"}</p>
+          <p><strong>Prix de la location:</strong> ${formatPrice(data.rentalPrice)}</p>
+          <p><strong>Caution:</strong> ${data.deposit ? formatPrice(data.deposit) : "_____________"}</p>
+          <p><strong>Kilométrage autorisé:</strong> ${data.mileageLimit || "Illimité"}</p>
+          <p><strong>Prix par km supplémentaire:</strong> ${data.extraKmPrice ? formatPrice(data.extraKmPrice) : "_____________"}</p>
+          <p><strong>Statut du paiement:</strong> ${data.isPaid ? "Payé" : "En attente"}</p>
+          <p><strong>Mode de paiement:</strong> ${data.paymentMethod || "_____________"}</p>
         </div>
 
         <div class="details">
-          <h2 class="section-title">Conditions Financières</h2>
-          <p><strong>Tarif de location:</strong> 2,540 euros (inclut assurance de base et taxes)</p>
-          <p><strong>Caution:</strong> 8,000 euros</p>
-          <p><strong>Kilométrage autorisé:</strong> Illimité</p>
-          <p><strong>Prix par km supplémentaire:</strong> 1 euro</p>
-          <p><strong>État de paiement:</strong> ${paid ? "Payé" : "En attente"}</p>
-          <p><strong>Mode de paiement:</strong> Carte bancaire / Virement bancaire</p>
-        </div>
-
-        <div class="details">
-          <h2 class="section-title">Frais Déductibles sur la Caution</h2>
+          <h2 class="section-title">Frais de Dommages</h2>
           <table>
             <tr>
               <th>Type de Dommage</th>
-              <th>Montant déductible</th>
+              <th>Montant</th>
             </tr>
-            <tr><td>Rayure</td><td>700 euros</td></tr>
-            <tr><td>Jantes rayées</td><td>2,000 euros</td></tr>
-            <tr><td>Élément endommagé (carrosserie)</td><td>1,000 euros</td></tr>
-            <tr><td>Siège abîmé</td><td>150 euros</td></tr>
-            <tr><td>Retour sale</td><td>150 euros</td></tr>
-            <tr><td>Mise en fourrière</td><td>2,000 euros</td></tr>
-            <tr><td>Dégâts majeurs</td><td>15,000 euros</td></tr>
+            <tr><td>Rayure</td><td>700 €</td></tr>
+            <tr><td>Jantes rayées</td><td>2 000 €</td></tr>
+            <tr><td>Élément carrosserie</td><td>1 000 €</td></tr>
+            <tr><td>Siège abîmé</td><td>150 €</td></tr>
+            <tr><td>Retour sale</td><td>150 €</td></tr>
+            <tr><td>Mise en fourrière</td><td>2 000 €</td></tr>
+            <tr><td>Dégâts majeurs</td><td>15 000 €</td></tr>
           </table>
         </div>
 
-        <div class="details">
-          <h2 class="section-title">Conditions Générales</h2>
-          <p>1. <strong>Objet:</strong> Ce contrat définit les conditions de location. Le locataire doit utiliser le véhicule selon la loi française.</p>
-          <p>2. <strong>Durée:</strong> La location est valide pour la période mentionnée. Tout retard entraîne des frais.</p>
-          <p>3. <strong>Utilisation:</strong> Le locataire doit traiter le véhicule avec soin.</p>
-          <p>4. <strong>Assurance:</strong> Le véhicule est assuré tous risques avec franchise.</p>
-          <p>5. <strong>Restitution:</strong> Le véhicule doit être restitué en bon état.</p>
-          <p>6. <strong>Annulation:</strong> Non-respect des conditions entraîne l’annulation sans remboursement.</p>
-          <p>7. <strong>Litiges:</strong> Les litiges seront réglés devant les tribunaux compétents.</p>
+        <div class="signature-section">
+          <div class="signature-box">
+            <div class="signature-line">Signature du locataire</div>
+          </div>
+          <div class="signature-box">
+            <div class="signature-line">Signature du loueur</div>
+          </div>
         </div>
 
-        <div class="signature">
-          <div>
-            <p>Signature du locataire</p>
-            <div class="signature-line"></div>
-          </div>
-          <div>
-            <p>Signature du loueur</p>
-            <div class="signature-line"></div>
-          </div>
+        <div class="footer">
+          <p>Document généré le ${new Date().toLocaleDateString("fr-FR")}</p>
         </div>
       </div>
     </body>
   </html>
-`;
+  `;
 
   try {
     const { uri } = await Print.printToFileAsync({
       html: htmlContent,
       base64: false,
     });
-    await Sharing.shareAsync(uri); // This will allow users to download or share the PDF
+    await Sharing.shareAsync(uri);
   } catch (error) {
-    console.error("Error generating PDF:", error);
+    console.error("Erreur lors de la génération du PDF:", error);
+    throw error;
   }
 };

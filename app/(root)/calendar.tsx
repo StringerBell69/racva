@@ -7,53 +7,13 @@ import {
   Image,
   Text,
 } from "react-native";
-import { Calendar, LocaleConfig } from "react-native-calendars";
+import { Calendar } from "react-native-calendars";
 import { router, useLocalSearchParams } from "expo-router";
 import { icons } from "@/constants"; // Assuming you have icons defined in the constants file
+import LocaleConfig from "@/constants/CalendarLocales";
 
 const BookingCalendar = () => {
-  // Set the locale configuration for French
-  LocaleConfig.locales["fr"] = {
-    monthNames: [
-      "Janvier",
-      "Février",
-      "Mars",
-      "Avril",
-      "Mai",
-      "Juin",
-      "Juillet",
-      "Août",
-      "Septembre",
-      "Octobre",
-      "Novembre",
-      "Décembre",
-    ],
-    monthNamesShort: [
-      "Jan",
-      "Fév",
-      "Mar",
-      "Avr",
-      "Mai",
-      "Jun",
-      "Jul",
-      "Aoû",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Déc",
-    ],
-    dayNames: [
-      "Dimanche",
-      "Lundi",
-      "Mardi",
-      "Mercredi",
-      "Jeudi",
-      "Vendredi",
-      "Samedi",
-    ],
-    dayNamesShort: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
-    today: "Aujourd'hui",
-  };
+  
 
   LocaleConfig.defaultLocale = "fr";
   const { id_agence, id_voiture, pricePerDay, price_per_day_on_weekend } =

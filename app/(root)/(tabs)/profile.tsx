@@ -38,13 +38,13 @@ const Profile = () => {
         contentContainerStyle={{ paddingBottom: 120 }}
         className="px-5"
       >
-        <Text className="text-2xl font-JakartaBold my-5">Settings</Text>
+        <Text className="text-2xl font-JakartaBold my-5">Paramètres</Text>
 
         {/* Sign-Out Button */}
         <TouchableOpacity
           onPress={handleSignOut}
           className="justify-center items-center w-12 h-12 rounded-full bg-white"
-          accessibilityLabel="Sign Out"
+          accessibilityLabel="Se déconnecter"
         >
           <Image source={icons.out} className="w-6 h-6" />
         </TouchableOpacity>
@@ -63,10 +63,10 @@ const Profile = () => {
           />
         </View>
         <Text className="text-lg font-semibold text-center my-2">
-          {user?.fullName || "User Name"}
+          {user?.fullName || "Nom d'utilisateur"}
         </Text>
         <Text className="text-sm text-gray-500 text-center mb-5">
-          {user?.primaryEmailAddress?.emailAddress || "user@example.com"}
+          {user?.primaryEmailAddress?.emailAddress || "utilisateur@example.com"}
         </Text>
 
         {/* Edit Profile Button 
@@ -74,13 +74,13 @@ const Profile = () => {
           onPress={() => router.push(`/chat`)}
           className="bg-gray-900 rounded-xl p-4 items-center"
         >
-          <Text className="text-gold font-bold">Editer le profil</Text>
+          <Text className="text-gold font-bold">Éditer le profil</Text>
         </TouchableOpacity>
 
-        <Text className="text-lg font-JakartaBold mt-8 mb-4">Preferences</Text>
+        <Text className="text-lg font-JakartaBold mt-8 mb-4">Préférences</Text>
         <View className="bg-white rounded-lg shadow-sm shadow-neutral-300 p-4">
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="ml-3 text-gray-700">Dark Mode</Text>
+            <Text className="ml-3 text-gray-700">Mode sombre</Text>
             <Switch
               value={form.darkMode}
               onValueChange={(value) => togglePreference("darkMode", value)}
@@ -88,7 +88,7 @@ const Profile = () => {
           </View>
 
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="ml-3 text-gray-700">Email Notifications</Text>
+            <Text className="ml-3 text-gray-700">Notifications par email</Text>
             <Switch
               value={form.emailNotifications}
               onValueChange={(value) =>
@@ -98,7 +98,7 @@ const Profile = () => {
           </View>
 
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="ml-3 text-gray-700">Push Notifications</Text>
+            <Text className="ml-3 text-gray-700">Notifications push</Text>
             <Switch
               value={form.pushNotifications}
               onValueChange={(value) =>

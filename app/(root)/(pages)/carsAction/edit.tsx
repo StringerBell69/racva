@@ -19,7 +19,7 @@ import { useAuth } from "@clerk/clerk-expo";
 import { useCarStore } from "@/store";
 import Cbutton from "@/components/Cbutton"; // Adjust the import path accordingly
 
-const edit = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
+const edit = ({ title = "Éditer une Voiture", snapPoints = ["100%"] }) => {
 
   
 
@@ -81,7 +81,7 @@ const edit = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
 
   const handleSave = async () => {
     if (!make || !model || !year) {
-      Alert.alert("Error", "Please fill in all required fields.");
+      Alert.alert("Erreur", "Veuillez remplir tous les champs requis.");
       return;
     }
 
@@ -92,10 +92,10 @@ const edit = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
           <Image
             source={images.noResult}
             className="w-40 h-40"
-            alt="No recent rides found"
+            alt="Aucun trajet récent trouvé"
             resizeMode="contain"
           />
-          <Text className="text-sm">No recent rides found</Text>
+          <Text className="text-sm">Aucun trajet récent trouvé</Text>
         </View>
       );
     }
@@ -117,15 +117,15 @@ const edit = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
           price_full_weekend: parseFloat(priceFullWeekend) || null,
         }),
       });
-      Alert.alert("Success", "Car details saved successfully.");
+      Alert.alert("Succès", "Détails de la voiture enregistrés avec succès.");
       router.back();
     } catch (error) {
-      console.error("Error saving car details:", error);
+      console.error("Erreur lors de l'enregistrement des détails de la voiture:", error);
       Alert.alert(
-        "Error",
+        "Erreur",
         error instanceof Error
           ? error.message
-          : "Failed to save car details. Please try again."
+          : "Échec de l'enregistrement des détails de la voiture. Veuillez réessayer."
       );
     } finally {
       setIsLoading(false); // Reset loading state
@@ -147,38 +147,38 @@ const edit = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
           <Text className="ml-4 text-xl font-bold text-gray-800"></Text>
         </TouchableOpacity>
         <Text className="ml-4 text-xl font-bold text-gray-800">
-          {title || "Go Back"}
+          {title || "Retour"}
         </Text>
       </View>
 
       <View className="p-4">
-        <Text className="text-lg text-gray-700 mb-2">Make</Text>
+        <Text className="text-lg text-gray-700 mb-2">Marque</Text>
         <TextInput
-          placeholder="Make"
+          placeholder="Marque"
           value={make}
           onChangeText={setMake}
           className="border-b border-gray-300 p-2 mb-4"
         />
 
-        <Text className="text-lg text-gray-700 mb-2">Model</Text>
+        <Text className="text-lg text-gray-700 mb-2">Modèle</Text>
         <TextInput
-          placeholder="Model"
+          placeholder="Modèle"
           value={model}
           onChangeText={setModel}
           className="border-b border-gray-300 p-2 mb-4"
         />
-        <Text className="text-lg text-gray-700 mb-2">Price per Day</Text>
+        <Text className="text-lg text-gray-700 mb-2">Prix par Jour</Text>
         <TextInput
-          placeholder="Price per Day"
+          placeholder="Prix par Jour"
           value={pricePerDay}
           onChangeText={setPricePerDay}
           keyboardType="decimal-pad"
           className="border-b border-gray-300 p-2 mb-4"
         />
 
-        <Text className="text-lg text-gray-700 mb-2">Price per Week</Text>
+        <Text className="text-lg text-gray-700 mb-2">Prix par Semaine</Text>
         <TextInput
-          placeholder="Price per Week"
+          placeholder="Prix par Semaine"
           value={pricePerWeek}
           onChangeText={setPricePerWeek}
           keyboardType="decimal-pad"
@@ -186,32 +186,32 @@ const edit = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
         />
 
         <Text className="text-lg text-gray-700 mb-2">
-          Price per Day on Weekend
+          Prix par Jour le Week-end
         </Text>
         <TextInput
-          placeholder="Price per Day on Weekend"
+          placeholder="Prix par Jour le Week-end"
           value={pricePerDayOnWeekend}
           onChangeText={setPricePerDayOnWeekend}
           keyboardType="decimal-pad"
           className="border-b border-gray-300 p-2 mb-4"
         />
 
-        <Text className="text-lg text-gray-700 mb-2">Price Full Weekend</Text>
+        <Text className="text-lg text-gray-700 mb-2">Prix du Week-end Complet</Text>
         <TextInput
-          placeholder="Price Full Weekend"
+          placeholder="Prix du Week-end Complet"
           value={priceFullWeekend}
           onChangeText={setPriceFullWeekend}
           keyboardType="decimal-pad"
           className="border-b border-gray-300 p-2 mb-4"
         />
 
-        <Text className="text-lg text-gray-700 mb-2">Year</Text>
+        <Text className="text-lg text-gray-700 mb-2">Année</Text>
         <Picker
           selectedValue={year}
           onValueChange={(itemValue) => setYear(itemValue)}
           className="h-12 w-1/2 mb-4"
         >
-          <Picker.Item label="Select Year" value="" />
+          <Picker.Item label="Sélectionner l'Année" value="" />
           {years.map((year) => (
             <Picker.Item key={year} label={String(year)} value={year} />
           ))}
@@ -220,7 +220,7 @@ const edit = ({ title = "Edit Car", snapPoints = ["100%"] }) => {
         <TouchableOpacity onPress={handleSave}>
           <View className="flex-row items-center justify-center bg-gray-900 rounded-lg p-2">
             <Text className="text-gold text-center text-sm">
-              {isLoading ? "Saving..." : "Save Changes"}
+              {isLoading ? "Enregistrement..." : "Enregistrer les Changements"}
             </Text>
           </View>
         </TouchableOpacity>

@@ -70,10 +70,10 @@ const Cars = () => {
                 <Image
                   source={images.noResult}
                   className="w-40 h-40"
-                  alt="No recent rides found"
+                  alt="Aucun résultat trouvé"
                   resizeMode="contain"
                 />
-                <Text className="text-sm">No recent cars found</Text>
+                <Text className="text-sm">Aucun résultat trouvé</Text>
               </>
             ) : (
               <ActivityIndicator size="small" color="#000" />
@@ -83,13 +83,13 @@ const Cars = () => {
         ListHeaderComponent={
           <>
             <View className="flex flex-row items-center justify-between my-5">
-              <Text className="text-2xl font-bold">My Cars</Text>
-              <TouchableOpacity
+              <Text className="text-2xl font-bold">Mes Voitures</Text>
+              {/* <TouchableOpacity
                 className="bg-gold-dark py-1 px-3 rounded-full"
                 onPress={handleCreate}
               >
-                <Text className="text-white text-center text-sm">New Car</Text>
-              </TouchableOpacity>
+                <Text className="text-white text-center text-sm">Nouvelle Voiture</Text>
+              </TouchableOpacity> */}
             </View>
           </>
         }

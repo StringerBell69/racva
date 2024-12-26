@@ -34,10 +34,10 @@ const ModifyCar: React.FC = () => {
         <Image
           source={images.noResult}
           className="w-40 h-40"
-          alt="No recent rides found"
+          alt="Aucune location récente trouvée"
           resizeMode="contain"
         />
-        <Text className="text-sm">No recent rides found</Text>
+        <Text className="text-sm">Aucune location récente trouvée</Text>
       </View>
     );
   }
@@ -46,13 +46,13 @@ const ModifyCar: React.FC = () => {
     (car.price_per_day || 0) * 5 + (car.price_full_weekend || 0) * 2;
 
   if (isLoading) {
-    return <Text>Loading...</Text>;
+    return <Text>Chargement...</Text>;
   }
 
   if (errorMessage) {
     return (
       <View className="flex flex-col items-center justify-center">
-        <Text className="text-sm">Error loading data: {errorMessage}</Text>
+        <Text className="text-sm">Erreur lors du chargement des données: {errorMessage}</Text>
       </View>
     );
   }
@@ -70,14 +70,14 @@ const ModifyCar: React.FC = () => {
           </View>
         </TouchableOpacity>
         <Text className="ml-4 text-xl font-bold text-gray-800">
-          {"Go Back"}
+          {"Retour"}
         </Text>
       </View>
 
      
 
       <View className="mb-4">
-        <Text className="text-lg font-bold mb-2">Récentes Locations</Text>
+        <Text className="text-lg font-bold mb-2">Locations Récentes</Text>
         {recentRentals && recentRentals.length > 0 ? (
           recentRentals.map((rent, index) => {
             const { renter, amount, paid, date, date_end } = rent;
@@ -98,12 +98,12 @@ const ModifyCar: React.FC = () => {
                     {endDate.toLocaleDateString()} ({daysDifference} jours)
                   </Text>
                   <Text className="text-sm">
-                    Earnings: {paid ? amount : "Not paid"} €
+                    Gains: {paid ? amount : "Non payé"} €
                   </Text>
                 </View>
                 <TouchableOpacity
                   className="bg-blue-500 py-1 px-3 rounded-full"
-                  onPress={() => alert(`Downloading contract for ${renter}...`)}
+                  onPress={() => alert(`Téléchargement du contrat pour ${renter}...`)}
                 >
                   <Text className="text-white text-center text-sm">
                     PDF

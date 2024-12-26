@@ -1,15 +1,25 @@
+import React, { useState } from "react";
 import { useUser } from "@clerk/clerk-expo";
 import { StripeProvider } from "@stripe/stripe-react-native";
-import { Image, Pressable, Text, View } from "react-native";
-
+import {
+  Image,
+  Pressable,
+  Text,
+  View,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import * as Clipboard from "expo-clipboard";
 import Payment from "@/components/Payment";
 import { icons } from "@/constants";
-import { useDriverStore, useLocationStore } from "@/store";
 import { router, useLocalSearchParams } from "expo-router";
 
 const BookRide = () => {
   const { user } = useUser();
-  const { id_agence, id_voiture, start, end, amount } = useLocalSearchParams();
+  const { id_agence, id_voiture, start, end, amount, agenceTrue } =
+    useLocalSearchParams();
+
+  const [copiedLink, setCopiedLink] = useState(false);
 
   // Ensure start and end are valid date strings
   const formattedStart = start
@@ -18,6 +28,25 @@ const BookRide = () => {
   const formattedEnd = end
     ? new Date(Array.isArray(end) ? end[0] : end!).toLocaleDateString()
     : "";
+
+  // Generate payment link
+  const generatePaymentLink = async () => {
+    const baseUrl = "https://yourapp.com/payment";
+    const paymentLink = `${baseUrl}?agence=${id_agence}&voiture=${id_voiture}&amount=${amount}&start=${start}&end=${end}`;
+
+    // Copy to clipboard
+    await Clipboard.setStringAsync(paymentLink);
+
+    // Show copied confirmation
+    setCopiedLink(true);
+    Alert.alert(
+      "Lien copié",
+      "Le lien de paiement a été copié dans le presse-papiers.",
+      [{ text: "OK", onPress: () => setCopiedLink(false) }]
+    );
+
+    return paymentLink;
+  };
 
   return (
     <StripeProvider
@@ -41,7 +70,6 @@ const BookRide = () => {
 
       {/* Main Content */}
       <View className="flex-1 mt-20 bg-gray-100 p-6 pt-16 relative">
-        {/* Added padding and background for card effect */}
         {/* Card Container */}
         <View className="bg-white rounded-xl shadow-lg p-6">
           <Text className="text-lg font-bold text-black">Récapitulatif</Text>
@@ -61,6 +89,18 @@ const BookRide = () => {
               {formattedStart} - {formattedEnd}
             </Text>
           </View>
+
+          {/* Payment Link for Agency */}
+          {agenceTrue && (
+            <TouchableOpacity
+              onPress={generatePaymentLink}
+              className="mt-4 p-3 rounded-lg border-2 border-gold-dark bg-transparent"
+            >
+              <Text className="text-gray-900 text-center font-semibold">
+                Générer un lien de paiement et réserver
+              </Text>
+            </TouchableOpacity>
+          )}
 
           {/* Payment Component */}
           <View className="mt-4">

@@ -33,7 +33,7 @@ const Rides = () => {
       >
         {/* Recent Rentals Section */}
         <View className="mb-4">
-          <Text className="text-lg font-bold mb-2">Recent rentals</Text>
+          <Text className="text-lg font-bold mb-2">Locations récentes</Text>
           {recentRentals && recentRentals.length > 0 ? (
             recentRentals.map((rent, index) => {
               const { renter, amount, paid, date, date_end } = rent;
@@ -54,10 +54,10 @@ const Rides = () => {
                       {endDate.toLocaleDateString()} ({daysDifference} jours)
                     </Text>
                     <Text className="text-sm">
-                      Paid: {paid ? amount : "Not paid"} €
+                      Payé: {paid ? amount : "Non payé"} €
                     </Text>
                   </View>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     className="bg-gold-dark py-1 px-3 rounded-full "
                     onPress={() =>
                       generateAndDownloadPdf(
@@ -66,7 +66,7 @@ const Rides = () => {
                         paid,
                         date,
                         date_end,
-                        `Rental_Contract_${renter}_${endDate.toLocaleDateString()}`
+                        `Contrat_Location_${renter}_${endDate.toLocaleDateString()}`
                       )
                     }
                   >
@@ -74,12 +74,12 @@ const Rides = () => {
                       
                       <Ionicons name="document-text" size={16} color="white" />
                     </Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               );
             })
           ) : (
-            <Text className="text-sm text-gray-600">No recent rides</Text>
+            <Text className="text-sm text-gray-600">Aucune location récente</Text>
           )}
         </View>
       </ScrollView>

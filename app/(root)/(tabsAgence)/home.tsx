@@ -82,11 +82,11 @@ const Home = () => {
     const htmlContent = `
       <html>
         <body>
-          <h1>Rental Contract</h1>
-          <p>Renter: ${renter}</p>
-          <p>Amount: ${paid ? amount : "Not paid"} €</p>
-          <p>Start Date: ${new Date(date).toLocaleDateString()}</p>
-          <p>End Date: ${new Date(date_end).toLocaleDateString()}</p>
+          <h1>Contrat de Location</h1>
+          <p>Locataire: ${renter}</p>
+          <p>Montant: ${paid ? amount : "Non payé"} €</p>
+          <p>Date de début: ${new Date(date).toLocaleDateString()}</p>
+          <p>Date de fin: ${new Date(date_end).toLocaleDateString()}</p>
         </body>
       </html>
     `;
@@ -96,19 +96,19 @@ const Home = () => {
         html: htmlContent,
         base64: false,
       });
-      await Sharing.shareAsync(uri); // This will allow users to download or share the PDF
+      await Sharing.shareAsync(uri); // Cela permettra aux utilisateurs de télécharger ou de partager le PDF
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      console.error("Erreur lors de la génération du PDF:", error);
     }
   };
 
   return (
     <SafeAreaView className="bg-white pb-20">
       <ScrollView className="bg-white p-4">
-        {/* Header Section */}
+        {/* Section de l'entête */}
         <View className="flex flex-row items-center justify-between my-5">
           <Text className="text-2xl font-JakartaExtraBold">
-            Welcome {user?.firstName}👋
+            Bienvenue {user?.firstName}👋
           </Text>
           <TouchableOpacity
             onPress={handleSignOut}
@@ -118,17 +118,17 @@ const Home = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Current Location Section */}
+        {/* Section de la localisation actuelle */}
         <Text className="text-xl font-JakartaBold mt-5 mb-3">
-          Your current location
+          Votre localisation actuelle
         </Text>
         <View className="flex flex-row items-center bg-transparent h-[300px]">
           <MapAgence />
         </View>
 
-        {/* Recent Rentals Section */}
+        {/* Section des locations récentes */}
         <View className="pt-4 mb-4">
-          <Text className="text-lg font-bold mb-2">Recent rentals</Text>
+          <Text className="text-lg font-bold mb-2">Locations récentes</Text>
           {recentRentals && recentRentals.length > 0 ? (
             recentRentals.map((rent, index) => {
               const { renter, amount, paid, date, date_end } = rent;
@@ -149,30 +149,15 @@ const Home = () => {
                       {endDate.toLocaleDateString()} ({daysDifference} jours)
                     </Text>
                     <Text className="text-sm">
-                      Earnings: {paid ? amount : "Not paid"} €
+                      Gains: {paid ? amount : "Non payé"} €
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    className="bg-gold py-1 px-3 rounded-full"
-                    onPress={() =>
-                      generateAndDownloadPdf(
-                        renter,
-                        amount,
-                        paid,
-                        date,
-                        date_end
-                      )
-                    }
-                  >
-                    <Text className="text-white text-center text-sm">
-                      <Ionicons name="document-text" size={16} color="white" />
-                    </Text>
-                  </TouchableOpacity>
+                  
                 </View>
               );
             })
           ) : (
-            <Text className="text-sm text-gray-600">No recent rides</Text>
+            <Text className="text-sm text-gray-600">Aucune location récente</Text>
           )}
         </View>
       </ScrollView>

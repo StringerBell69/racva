@@ -1,6 +1,15 @@
 import { create } from "zustand";
+import { persist, PersistStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { DriverStore, LocationStore, MarkerData, CarStore,Car,UserType } from "@/types/type";
+import {
+  DriverStore,
+  LocationStore,
+  MarkerData,
+  CarStore,
+  Car,
+  UserType,
+} from "@/types/type";
 
 export const useLocationStore = create<LocationStore>((set) => ({
   userLatitude: null,
@@ -65,17 +74,55 @@ interface InputStore {
   setInputValue: (value: string) => void;
 }
 
+interface User {
+  id: number | null;
+  setUserId: (value: number) => void;
+}
+export const useUser = create<User>((set) => ({
+  id: null,
+  setUserId: (value: number) => set({ id: value }),
+}));
+
 // Create the store
 export const useInputStore = create<InputStore>((set) => ({
   inputValue: null,
   setInputValue: (value: string) => set({ inputValue: value }),
 }));
 
-export const useUserTypeStore = create<UserType>((set) => ({
-  userType: null, // Initialize with no user type selected
-  setUserType: (userType: string) => set({ userType }), // Set the user type object
-  clearUserType: () => set({ userType: null }), // Clear the UserType object
-}));
+// Define the UserTypeStore interface
+interface UserTypeStore {
+  userType: string | null; // Allow userType to be null
+  setUserType: (userType: string | null) => void; // Update to accept string | null
+  clearUserType: () => void;
+}
+
+// Define a custom storage interface
+const customStorage: PersistStorage<any> = {
+  getItem: async (name: string): Promise<any> => {
+    const value = await AsyncStorage.getItem(name);
+    return value ? JSON.parse(value) : null; // Parse the JSON string back to an object
+  },
+  setItem: async (name: string, value: any) => {
+    await AsyncStorage.setItem(name, JSON.stringify(value)); // Stringify the object before storing
+  },
+  removeItem: async (name: string) => {
+    await AsyncStorage.removeItem(name);
+  },
+};
+
+export const useUserTypeStore = create<UserTypeStore>()(
+  persist(
+    (set) => ({
+      userType: null,
+      setUserType: (userType: string | null) => set({ userType }),
+      clearUserType: () => set({ userType: null }),
+    }),
+    {
+      name: "user-type-storage",
+      storage: customStorage, // Use the custom storage
+    }
+  )
+);
 
 export const useCarStore = create<CarStore>((set) => ({
   car: null, // Initialize with no car selected

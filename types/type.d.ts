@@ -91,13 +91,35 @@ interface UserType {
   clearUserType: () => void; // Method to clear the user type
 }
 interface Rent {
-  date: string; // rental start date
-  date_end: string; // rental end date
-  status: string; // status of the rental
-  paid: boolean; // whether the rental is paid
-  amount: number; // rental amount
-  renter: string; // name of the renter
+  id: number; // Rental ID
+  rental_start_date: string; // Start date of the rental
+  rental_end_date: string; // End date of the rental
+  date: string; // Rental start date (can be used as rentalStart)
+  date_end: string; // Rental end date (can be used as rentalEnd)
+  status: string; // Status of the rental (e.g., "upcoming", "ongoing", "ended")
+  paid: boolean; // Whether the rental has been paid
+  amount: number; // Total rental amount
+  renter: string; // Full name of the renter (used to split into first and last name)
+  renter_phone?: string; // Optional: Phone number of the renter
+  renter_email?: string; // Optional: Email address of the renter
+  vehicle_brand?: string; // Optional: Vehicle brand (e.g., "Toyota")
+  vehicle_model?: string; // Optional: Vehicle model (e.g., "Corolla")
+  vehicle_plate?: string; // Optional: Vehicle plate number
+  vehicle_condition?: string; // Optional: Condition of the vehicle
+  pickup_location?: string; // Optional: Pickup location
+  return_location?: string; // Optional: Return location
+  rental_price?: number; // Optional: Price for the rental (per day/week)
+  deposit?: number; // Optional: Deposit for the rental
+  mileage_limit?: number; // Optional: Mileage limit (in km)
+  extra_km_price?: number; // Optional: Price per extra km
+  payment_method?: string; // Optional: Payment method
+  agency_name?: string; // Agency name (added)
+  agency_address?: string; // Agency address (added)
+  agency_phone?: string; // Agency phone (added)
+  agency_email?: string; // Agency email (added)
 }
+
+
 interface Earnings {
   paid_count: string; // Adjust the property to match the API response
 }
@@ -105,8 +127,6 @@ interface Earnings {
 interface Jsonbin {
   jsonbin_url: string; // Adjust the property to match the API response
 }
-
-
 
 declare interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -130,7 +150,6 @@ declare interface GoogleInputProps {
     latitude: number;
     longitude: number;
     address: string;
-    
   }) => void;
 }
 
@@ -203,4 +222,20 @@ declare interface DriverCardProps {
   item: MarkerData;
   selected: number;
   setSelected: () => void;
+}
+
+declare interface Message {
+  id: number;
+  chat_id: string;
+  sender_id: number;
+  recipient_id: number;
+  message: string;
+  timestamp: string;
+}
+
+declare interface ChatMessage {
+  type: "chat_history" | "new_message" | "error" | "connection_established";
+  messages?: Message[];
+  message?: Message;
+  error?: string;
 }

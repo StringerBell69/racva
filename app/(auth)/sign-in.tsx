@@ -1,58 +1,41 @@
 import { useSignIn } from "@clerk/clerk-expo";
-import { Link, router } from "expo-router";
-import { useCallback, useState } from "react";
-import { Alert, Image, ScrollView, Text, View } from "react-native";
+import { useCallback } from "react";
 import { useAuth } from "@clerk/clerk-expo";
+import { useSignUp } from "@clerk/clerk-expo";
+import { Link, router } from "expo-router";
+import { useState } from "react";
+import { Alert, Image, ScrollView, Text, View } from "react-native";
+import { ReactNativeModal } from "react-native-modal";
 
+import { fetchAPI } from "@/lib/fetch";
 import { Jsonbin } from "@/types/type";
 import CustomButton from "@/components/CustomButton";
 import InputField from "@/components/InputField";
 import OAuth from "@/components/OAuth";
 import { icons, images } from "@/constants";
 import { useFetch } from "@/lib/fetch";
-import { useUserTypeStore } from "@/store";
+import {  useUserTypeStore } from "@/store";
+import { TouchableOpacity } from "@gorhom/bottom-sheet";
+import { useUser } from "@clerk/clerk-expo";
 
 const SignIn = () => {
   const { signIn, setActive, isLoaded } = useSignIn();
   const { signOut } = useAuth();
+  const { user } = useUser();
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
-  const bin = process.env.EXPO_X_MASTER_API_KEY;
-  const { setUserType } = useUserTypeStore();
+  
 
-  // Fetch JSON bin data
-  const { data: jsonBinData } = useFetch<Jsonbin[]>(`/(api)/jsonbin`);
+  
 
-  // Fetch user type based on email
-  const fetchUserData = async (email: string): Promise<boolean> => {
-    try {
-      const jsonBinUrl = jsonBinData?.[0]?.jsonbin_url;
-      const headers: HeadersInit = bin ? { "X-Master-Key": bin } : {};
-
-      const response = await fetch(
-        jsonBinUrl || "https://api.jsonbin.io/v3/b/67194b3ee41b4d34e447b219",
-        { headers }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch data: ${response.statusText}`);
-      }
-
-      const {
-        record: { adminEmails },
-      } = await response.json();
-      return adminEmails
-        .map((e: string) => e.toLowerCase())
-        .includes(email.toLowerCase());
-    } catch (error) {
-      console.error("Error fetching user type:", error);
-      return false;
-    }
-  };
-
+  // Récupérer le type d'utilisateur basé sur l'email
+  
+      
   const onSignInPress = useCallback(async () => {
+    await signOut();
+
     if (!isLoaded) return;
     setLoading(true);
 
@@ -65,26 +48,31 @@ const SignIn = () => {
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
 
-        // Determine if the user is an agency
-        const isAgence = await fetchUserData(form.email);
-        if (isAgence) {
-          setUserType("agence");
+        // Déterminer si l'utilisateur est une agence
+        const userType = user?.publicMetadata?.userType;
+       
+        if (userType === "agence") {
           router.replace("/(root)/(tabsAgence)/home");
-        } else {
-          setUserType("user");
+        } else if (userType === undefined) {
           router.replace("/(root)/(tabs)/home");
+        } else {
+          console.log(JSON.stringify(signInAttempt, null, 2));
+          Alert.alert("Erreur", "Échec de la connexion. Veuillez réessayer.");
         }
-      } else {
-        console.log(JSON.stringify(signInAttempt, null, 2));
-        Alert.alert("Error", "Login failed. Please try again.");
       }
     } catch (err: any) {
       console.error(JSON.stringify(err, null, 2));
-      Alert.alert("Error", err.errors[0]?.longMessage || "An error occurred");
+      Alert.alert(
+        "Erreur",
+        err.errors[0]?.longMessage || "Une erreur est survenue"
+      );
     } finally {
       setLoading(false);
     }
-  }, [isLoaded, form, jsonBinData]);
+  }, [isLoaded, form]);
+
+  // Check if user is defined
+  console.log(user);
 
   return (
     <ScrollView className="flex-1 bg-white">
@@ -92,25 +80,25 @@ const SignIn = () => {
         <View className="relative w-full h-[250px]">
           <Image source={images.signUpCar} className="z-0 w-full h-[250px]" />
           <Text className="text-2xl text-black font-JakartaSemiBold absolute bottom-5 left-5">
-            Welcome 👋
+            Bienvenue 👋
           </Text>
         </View>
 
         <View className="p-5">
-          {/* Email Input */}
+          {/* Champ Email */}
           <InputField
             label="Email"
-            placeholder="Enter email"
+            placeholder="Entrez votre email"
             icon={icons.email}
             textContentType="emailAddress"
             value={form.email}
             onChangeText={(value) => setForm({ ...form, email: value })}
           />
 
-          {/* Password Input */}
+          {/* Champ Mot de passe */}
           <InputField
-            label="Password"
-            placeholder="Enter password"
+            label="Mot de passe"
+            placeholder="Entrez votre mot de passe"
             icon={icons.lock}
             secureTextEntry
             textContentType="password"
@@ -118,24 +106,26 @@ const SignIn = () => {
             onChangeText={(value) => setForm({ ...form, password: value })}
           />
 
-          {/* Sign-In Button */}
-          <CustomButton
-            title={loading ? "Signing In..." : "Sign In"}
+          <TouchableOpacity
             onPress={onSignInPress}
-            className="mt-6"
-            disabled={loading}
-          />
+            style={{
+              backgroundColor: "#111827",
+              borderRadius: 24,
+              padding: 16,
+              alignItems: "center",
+              marginTop: 80,
+              opacity: 20, // Removed the gray filter by setting opacity to 1
+            }}
+          >
+            <Text className="text-gold font-bold text-base">Se connecter</Text>
+          </TouchableOpacity>
 
-          {/* OAuth Providers */}
-          <OAuth />
-
-          {/* Sign-Up Link */}
           <Link
             href="/sign-up"
             className="text-lg text-center text-general-200 mt-10"
           >
-            Don't have an account?{" "}
-            <Text className="text-primary-500">Sign Up</Text>
+            Vous n'avez pas de compte ?{" "}
+            <Text className="text-primary-500">S'inscrire</Text>
           </Link>
         </View>
       </View>

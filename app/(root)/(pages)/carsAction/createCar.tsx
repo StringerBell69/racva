@@ -1,329 +1,299 @@
+import React, { useState } from "react";
 import {
   View,
   Text,
   TextInput,
+  ScrollView,
   TouchableOpacity,
   Image,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
-  StatusBar,
-  Switch,
 } from "react-native";
-import { useState } from "react";
+import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
+import { Camera, Plus, X } from "lucide-react-native";
+import { styled } from "nativewind";
+import { uploadFile } from "@uploadcare/upload-client";
 import { fetchAPI } from "@/lib/fetch";
 import { router } from "expo-router";
-import { icons } from "@/constants";
-import CarsLayout from "@/components/CarsLayout";
-import CustomButton from "@/components/CustomButton";
-import * as ImagePicker from "expo-image-picker";
-import { Picker } from "@react-native-picker/picker";
-import { useAuth } from "@clerk/clerk-expo";
-import { uploadFile } from "@uploadcare/upload-client";
 
-const createCar = ({ title = "Add Car", snapPoints = ["100%"] }) => {
+// Styled components
+const StyledView = styled(View);
+const StyledText = styled(Text);
+const StyledTouchableOpacity = styled(TouchableOpacity);
+const StyledTextInput = styled(TextInput);
+const StyledScrollView = styled(ScrollView);
+const StyledImage = styled(Image);
+const StyledKeyboardAvoidingView = styled(KeyboardAvoidingView);
+
+const CreateCarScreen = () => {
+  // Form State
   const [make, setMake] = useState("");
   const [model, setModel] = useState("");
   const [year, setYear] = useState("");
-  const [available, setAvailable] = useState(true);
-  const [photoUrl, setPhotoUrl] = useState<File | null>(null);
-  const [photo1, setPhoto1] = useState<File | null>(null);
-  const [photo2, setPhoto2] = useState<File | null>(null);
-  const [photo3, setPhoto3] = useState<File | null>(null);
-   const [pricePerDay, setPricePerDay] = useState("");
-   const [pricePerWeek, setPricePerWeek] = useState("");
-   const [pricePerDayOnWeekend, setPricePerDayOnWeekend] = useState("");
-   const [priceFullWeekend, setPriceFullWeekend] = useState("");
+  const [mileage, setMileage] = useState("");
+  const [description, setDescription] = useState("");
+
+  // Price State
+  const [pricePerDay, setPricePerDay] = useState("");
+  const [pricePerDayOnWeekend, setPricePerDayOnWeekend] = useState("");
+
+  // Image State
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photo1, setPhoto1] = useState<string | null>(null);
+  const [photo2, setPhoto2] = useState<string | null>(null);
+  const [photo3, setPhoto3] = useState<string | null>(null);
+  const uploadcare = process.env.UPLOADCARE;
+
+  if (!uploadcare) {
+    throw new Error("Uploadcare public key is not defined");
+  }
+
+  // Other State
+  const [userId, setUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { userId } = useAuth();
 
-  const currentYear = new Date().getFullYear();
-  const years = Array.from(
-    { length: currentYear - 1985 + 1 },
-    (_, i) => currentYear - i
-  );
+  // Helper: Read and convert file to a format compatible with Uploadcare
+  const readAsBlobOrFile = async (uri: string) => {
+    const response = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    const blob = new Blob([response], { type: "image/jpeg" }); // Adjust MIME type if needed
+    return blob;
+  };
 
-  const pickImage = async (
-    setter: React.Dispatch<React.SetStateAction<File | null>>
-  ) => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+  const uploadImage = async (uri: string) => {
+    const file = await readAsBlobOrFile(uri);
+    return uploadFile(file, {
+      publicKey: uploadcare,
+      store: "auto",
+    });
+  };
+
+  const pickImage = async () => {
+    if (Platform.OS !== "web") {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        alert("Désolé, nous avons besoin de l'autorisation de la galerie pour que cela fonctionne!");
+        return;
+      }
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
 
     if (!result.canceled) {
-      const imageUri = result.assets[0].uri;
+      const selectedImage = result.assets[0].uri;
 
-      // Fetch the image data from the URI
-      const response = await fetch(imageUri);
-      const blob = await response.blob(); // Convert the response to a Blob
-
-      // Create a File from the Blob
-      const fileName = result.assets[0].fileName || "image.jpg"; // Use the original filename or fallback
-      const mimeType = result.assets[0].type || "image/jpeg"; // Use the original mime type or fallback
-      const file = new File([blob], fileName, { type: mimeType });
-
-      // Update the state with the File
-      setter(file); // Set the File in state
-    } else {
-      setter(null);
+      if (!photoUrl) {
+        setPhotoUrl(selectedImage);
+      } else if (!photo1) {
+        setPhoto1(selectedImage);
+      } else if (!photo2) {
+        setPhoto2(selectedImage);
+      } else if (!photo3) {
+        setPhoto3(selectedImage);
+      }
     }
   };
 
-  const handleSave = async () => {
+  const removeImage = (index: number) => {
+    switch (index) {
+      case 0:
+        setPhotoUrl(null);
+        break;
+      case 1:
+        setPhoto1(null);
+        break;
+      case 2:
+        setPhoto2(null);
+        break;
+      case 3:
+        setPhoto3(null);
+        break;
+    }
+  };
+
+  const handleSubmit = async () => {
+    // Validation
     if (!make || !model || !year) {
-      Alert.alert("Error", "Please fill in all required fields.");
+      alert("Veuillez remplir tous les champs requis");
       return;
     }
 
-    setIsLoading(true); // Set loading state
+    setIsLoading(true);
 
-    let uploadedUrls = []; // Declare uploadedUrls outside the try block
+    let uploadedUrls = [];
 
     try {
+      // Upload files to Uploadcare
       uploadedUrls = await Promise.all([
-        photoUrl
-          ? uploadFile(photoUrl, {
-              publicKey: "879c9f09370c63acc680",
-              store: "auto",
-              metadata: {
-                subsystem: "js-client",
-                pet: "cat",
-              },
-            })
-          : Promise.resolve(null),
-        photo1
-          ? uploadFile(photo1, {
-              publicKey: "879c9f09370c63acc680",
-              store: "auto",
-              metadata: {
-                subsystem: "js-client",
-                pet: "cat",
-              },
-            })
-          : Promise.resolve(null),
-        photo2
-          ? uploadFile(photo2, {
-              publicKey: "879c9f09370c63acc680",
-              store: "auto",
-              metadata: {
-                subsystem: "js-client",
-                pet: "cat",
-              },
-            })
-          : Promise.resolve(null),
-        photo3
-          ? uploadFile(photo3, {
-              publicKey: "879c9f09370c63acc680",
-              store: "auto",
-              metadata: {
-                subsystem: "js-client",
-                pet: "cat",
-              },
-            })
-          : Promise.resolve(null),
+        photoUrl ? uploadImage(photoUrl) : Promise.resolve(null),
+        photo1 ? uploadImage(photo1) : Promise.resolve(null),
+        photo2 ? uploadImage(photo2) : Promise.resolve(null),
+        photo3 ? uploadImage(photo3) : Promise.resolve(null),
       ]);
 
+      // Extract CDN URLs
       const photoUrls = uploadedUrls.map((upload) =>
         upload ? upload.cdnUrl : null
       );
 
+      // Submit car details to API
       const response = await fetchAPI("/(api)/cars/create", {
         method: "POST",
         body: JSON.stringify({
           marque: make,
           modele: model,
           annee: year,
-          disponible: available,
           photo_url: photoUrls[0],
           photo1: photoUrls[1],
           photo2: photoUrls[2],
           photo3: photoUrls[3],
           userId: userId,
-          price_per_day: pricePerDay, 
-          price_per_week: pricePerWeek, 
-          price_per_day_on_weekend: pricePerDayOnWeekend, 
-          price_full_weekend: priceFullWeekend, 
+          price_per_day: pricePerDay,
+          price_per_day_on_weekend: pricePerDayOnWeekend,
+          mileage: mileage,
+          description: description,
         }),
       });
 
-      Alert.alert("Success", "Car details saved successfully.");
+      Alert.alert("Succès", "Détails de la voiture enregistrés avec succès.");
       router.back();
     } catch (error) {
-      console.error("Error saving car details:", error);
+      console.error("Erreur lors de l'enregistrement des détails de la voiture:", error);
       Alert.alert(
-        "Error",
+        "Erreur",
         error instanceof Error
           ? error.message
-          : "Failed to save car details. Please try again."
+          : "Échec de l'enregistrement des détails de la voiture. Veuillez réessayer."
       );
     } finally {
-      setIsLoading(false); // Reset loading state
+      setIsLoading(false);
     }
   };
 
-
   return (
-    <CarsLayout title={title} snapPoints={snapPoints}>
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
+    <StyledKeyboardAvoidingView
+      className="flex-1 bg-white"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <StyledScrollView
+        className="px-5 pt-10 pb-20"
+        showsVerticalScrollIndicator={false}
+      >
+        <StyledText className="text-2xl font-bold mb-5 mt-10 text-center">
+          Créer une annonce de voiture
+        </StyledText>
 
-      <View className="flex-row items-center p-4 bg-white">
-        <TouchableOpacity onPress={() => router.back()}>
-          <View className="p-2 rounded-full bg-gray-200">
-            <Image source={icons.backArrow} className="w-6 h-6" />
-          </View>
-        </TouchableOpacity>
-        <Text className="ml-4 text-xl font-bold text-gray-800">
-          {title || "Go Back"}
-        </Text>
-      </View>
+        {/* Image Upload Section */}
+        <StyledView className="mb-5">
+          <StyledText className="text-lg font-semibold mb-3">Photos</StyledText>
 
-      <View className="p-4">
-        <Text className="text-lg text-gray-700 mb-2">Make</Text>
-        <TextInput
-          placeholder="Make"
-          value={make}
-          onChangeText={setMake}
-          className="border-b border-gray-300 p-2 mb-4"
-        />
-
-        <Text className="text-lg text-gray-700 mb-2">Model</Text>
-        <TextInput
-          placeholder="Model"
-          value={model}
-          onChangeText={setModel}
-          className="border-b border-gray-300 p-2 mb-4"
-        />
-        <Text className="text-lg text-gray-700 mb-2">Price per Day</Text>
-        <TextInput
-          placeholder="Price per Day"
-          value={pricePerDay}
-          onChangeText={setPricePerDay}
-          keyboardType="decimal-pad"
-          className="border-b border-gray-300 p-2 mb-4"
-        />
-
-        <Text className="text-lg text-gray-700 mb-2">Price per Week</Text>
-        <TextInput
-          placeholder="Price per Week"
-          value={pricePerWeek}
-          onChangeText={setPricePerWeek}
-          keyboardType="decimal-pad"
-          className="border-b border-gray-300 p-2 mb-4"
-        />
-
-        <Text className="text-lg text-gray-700 mb-2">
-          Price per Day on Weekend
-        </Text>
-        <TextInput
-          placeholder="Price per Day on Weekend"
-          value={pricePerDayOnWeekend}
-          onChangeText={setPricePerDayOnWeekend}
-          keyboardType="decimal-pad"
-          className="border-b border-gray-300 p-2 mb-4"
-        />
-
-        <Text className="text-lg text-gray-700 mb-2">Price Full Weekend</Text>
-        <TextInput
-          placeholder="Price Full Weekend"
-          value={priceFullWeekend}
-          onChangeText={setPriceFullWeekend}
-          keyboardType="decimal-pad"
-          className="border-b border-gray-300 p-2 mb-4"
-        />
-
-        <Text className="text-lg text-gray-700 mb-2">Year</Text>
-        <Picker
-          selectedValue={year}
-          onValueChange={(itemValue) => setYear(itemValue)}
-          className="h-12 w-1/2 mb-4"
-        >
-          <Picker.Item label="Select Year" value="" />
-          {years.map((year) => (
-            <Picker.Item key={year} label={String(year)} value={year} />
-          ))}
-        </Picker>
-
-        <Text className="text-lg text-gray-700 mb-2">Available</Text>
-        <Switch
-          value={available}
-          onValueChange={setAvailable}
-          className="mb-4"
-        />
-
-        <Text className="text-lg text-gray-700 mb-2">Main Photo</Text>
-        <View className="items-center p-4 bg-gray-100 rounded-lg shadow-lg mb-4 space-y-4">
+          {/* Main Photo */}
           {photoUrl ? (
-            <Image
-              source={{ uri: URL.createObjectURL(photoUrl) }} // Adjust as needed
-              className="w-40 h-40 rounded-lg mb-4"
-            />
+            <StyledView className="mb-4 relative">
+              <StyledImage
+                source={{ uri: photoUrl }}
+                className="w-full h-64 rounded-xl"
+              />
+              <StyledTouchableOpacity
+                className="absolute top-3 right-3 bg-red-500/70 rounded-full p-2"
+                onPress={() => removeImage(0)}
+              >
+                <X color="white" size={20} />
+              </StyledTouchableOpacity>
+            </StyledView>
           ) : (
-            <Text className="text-gray-500">No image selected</Text>
+            <StyledTouchableOpacity
+              className="h-64 bg-gray-100 rounded-xl mb-2 justify-center items-center"
+              onPress={pickImage}
+            >
+              <Camera color="gray" size={48} />
+              <StyledText className="text-gray-500 mt-2 mb">
+                Ajouter une photo principale
+              </StyledText>
+            </StyledTouchableOpacity>
           )}
-          <CustomButton
-            title="Pick Main Image"
-            onPress={() => pickImage(setPhotoUrl)}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg my-4"
-          />
 
-          {photoUrl && (
-            <View className="space-y-2">
-              <CustomButton
-                title="Pick Image 1"
-                onPress={() => pickImage(setPhoto1)}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg my-4"
-              />
-              {photo1 && (
-                <CustomButton
-                  title="Pick Image 2"
-                  onPress={() => pickImage(setPhoto2)}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg my-4"
-                />
-              )}
-              {photo1 && photo2 && (
-                <CustomButton
-                  title="Pick Image 3"
-                  onPress={() => pickImage(setPhoto3)}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg my-4"
-                />
-              )}
-            </View>
-          )}
-          <View className="flex-row space-x-4 mt-4">
-            {photo1 && (
-              <Image
-                source={{ uri: URL.createObjectURL(photo1) }} // Adjust as needed
-                className="w-20 h-20 rounded-lg"
-              />
+          {/* Additional Photos */}
+          <StyledView className="flex-row flex-wrap gap-2">
+            {[photo1, photo2, photo3].map(
+              (photo, index) =>
+                photo && (
+                  <StyledView key={index} className="w-[30%] relative">
+                    <StyledImage
+                      source={{ uri: photo }}
+                      className="w-full h-24 rounded-lg"
+                    />
+                    <StyledTouchableOpacity
+                      className="absolute top-1 right-1 bg-red-500/70 rounded-full p-1"
+                      onPress={() => removeImage(index + 1)}
+                    >
+                      <X color="white" size={12} />
+                    </StyledTouchableOpacity>
+                  </StyledView>
+                )
             )}
-            {photo2 && (
-              <Image
-                source={{ uri: URL.createObjectURL(photo2) }} // Adjust as needed
-                className="w-20 h-20 rounded-lg"
-              />
-            )}
-            {photo3 && (
-              <Image
-                source={{ uri: URL.createObjectURL(photo3) }} // Adjust as needed
-                className="w-20 h-20 rounded-lg"
-              />
-            )}
-          </View>
-        </View>
 
-        <TouchableOpacity
-          className={`${isLoading ? "bg-gray-400" : "bg-green-500"} p-4 rounded-lg`}
-          onPress={handleSave}
+            {/* Add Photo Button */}
+            {(!photoUrl ||
+              [photo1, photo2, photo3].filter(Boolean).length < 3) && (
+              <StyledTouchableOpacity
+                className="w-[30%] h-24 border-2 border-gray-200 rounded-lg justify-center items-center bg-gray-50"
+                onPress={pickImage}
+              >
+                <Plus color="gray" size={24} />
+              </StyledTouchableOpacity>
+            )}
+          </StyledView>
+        </StyledView>
+
+        {/* Car Details Section */}
+        <StyledView className="mb-5">
+          <StyledText className="text-lg font-semibold mb-3">
+            Détails de la voiture
+          </StyledText>
+
+          {/* Input Fields */}
+          <StyledView className="space-y-4">
+            {/* Input fields for car details */}
+            <StyledView>
+              <StyledText className="mb-2 text-gray-700 font-medium">
+                Marque *
+              </StyledText>
+              <StyledTextInput
+                className="border border-gray-200 rounded-lg p-3 bg-gray-50"
+                value={make}
+                onChangeText={setMake}
+                placeholder="par exemple, Toyota"
+              />
+            </StyledView>
+
+            {/* Other input fields */}
+            {/* Similar input fields for model, year, price, etc. */}
+          </StyledView>
+        </StyledView>
+
+        {/* Submit Button */}
+        <StyledTouchableOpacity
+          className="bg-blue-500 p-4 mb-20 rounded-xl items-center"
+          onPress={handleSubmit}
           disabled={isLoading}
         >
-          <Text className="text-white text-center font-bold">
-            {isLoading ? "Saving..." : "Save Changes"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </CarsLayout>
+          <StyledText className="text-white text-base font-bold">
+            {isLoading ? "Création de l'annonce..." : "Créer une annonce"}
+          </StyledText>
+        </StyledTouchableOpacity>
+      </StyledScrollView>
+    </StyledKeyboardAvoidingView>
   );
 };
 
-export default createCar;
+export default CreateCarScreen;

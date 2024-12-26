@@ -18,7 +18,7 @@ const Home: React.FC<HomeProps> = ({ title }) => {
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   const dynamicTitle =
-    title || (user?.firstName ? `Hey ${user.firstName} 👋` : "Hey 👋");
+    title || (user?.firstName ? `Bonjour ${user.firstName} 👋` : "Bonjour 👋");
 
   const { setUserLocation, setDestinationLocation } = useLocationStore();
 
@@ -72,9 +72,9 @@ const Home: React.FC<HomeProps> = ({ title }) => {
             pressableIconClick={handleIconClick}
           />
         </View>
-        {/* Recent Rentals Section */}
+        {/* Section des Locations Récentes */}
         <View className="pt-4 mb-4">
-          <Text className="text-lg font-bold mb-2">Last Rental</Text>
+          <Text className="text-lg font-bold mb-2">Dernière Location</Text>
           {recentRentals && recentRentals.length > 0 ? (
             recentRentals.map((rent, index) => {
               const { renter, amount, paid, date, date_end } = rent;
@@ -92,35 +92,18 @@ const Home: React.FC<HomeProps> = ({ title }) => {
                     <Text className="text-base font-semibold">{renter}</Text>
                     <Text className="text-sm text-gray-600">
                       Dates: {startDate.toLocaleDateString()} -{" "}
-                      {endDate.toLocaleDateString()} ({daysDifference} days)
+                      {endDate.toLocaleDateString()} ({daysDifference} jours)
                     </Text>
                     <Text className="text-sm">
-                      Paid: {paid ? amount : "Not paid"} €
+                      Payé: {paid ? amount : "Non payé"} €
                     </Text>
                   </View>
-                  <TouchableOpacity
-                    className="bg-gold-dark py-1 px-3 rounded-full"
-                    onPress={() =>
-                      generateAndDownloadPdf(
-                        renter,
-                        amount,
-                        paid,
-                        date,
-                        date_end,
-                        `Rental_Contract_${renter}_${endDate.toLocaleDateString()}`
-                      )
-                    }
-                  >
-                    <Text className="text-white text-center text-sm">
-                      
-                      <Ionicons name="document-text" size={16} color="white" />
-                    </Text>
-                  </TouchableOpacity>
+                 
                 </View>
               );
             })
           ) : (
-            <Text className="text-sm text-gray-600">No recent rides</Text>
+            <Text className="text-sm text-gray-600">Aucune location récente</Text>
           )}
         </View>
       </ScrollView>

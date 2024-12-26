@@ -21,7 +21,7 @@ const Home = () => {
         }}
         className="w-full flex justify-end items-end p-5"
       >
-        <Text className="text-black text-md font-JakartaBold">Skip</Text>
+        <Text className="text-black text-md font-JakartaBold">Passer</Text>
       </TouchableOpacity>
 
       <Swiper
@@ -60,12 +60,12 @@ const Home = () => {
             ? router.replace("/(auth)/sign-up")
             : swiperRef.current?.scrollBy(1)
         }
-        activeOpacity={0.8} // Adds a smoother press effect
+        activeOpacity={0.8} // Ajoute un effet de pression plus doux
         className="w-full px-5 mb-10"
       >
         <View className="flex-row items-center justify-center bg-gray-900 rounded-lg p-4">
           <Text className="text-gold font-semibold text-lg">
-            {isLastSlide ? "Get Started" : "Next"}
+            {isLastSlide ? "Commencer" : "Suivant"}
           </Text>
         </View>
       </TouchableOpacity>
