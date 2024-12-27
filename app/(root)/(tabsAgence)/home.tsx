@@ -3,7 +3,7 @@ import { useAuth } from "@clerk/clerk-expo";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import { useState, useEffect } from "react";
-import { Text, View, TouchableOpacity, Image, ScrollView } from "react-native";
+import { Text, View, TouchableOpacity, Image, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Print from "expo-print";
 import MapAgence from "@/components/MapsAgencesUser";
@@ -12,14 +12,14 @@ import { useFetch } from "@/lib/fetch";
 import { useLocationStore } from "@/store";
 import { Rent } from "@/types/type";
 import * as Sharing from "expo-sharing";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 
 
 const Home = () => {
-  const { user } = useUser();
-  const { isLoaded } = useUser();
+  const { user, isLoaded } = useUser();
   const { isSignedIn } = useUser();
-  
+  const [expandedRentId, setExpandedRentId] = useState<string | null>(null);
+
 
   
   const { signOut } = useAuth();
@@ -72,34 +72,119 @@ const Home = () => {
     router.push("/(root)/find-ride");
   };
 
-  const generateAndDownloadPdf = async (
-    renter: string,
-    amount: number,
-    paid: boolean,
-    date: string,
-    date_end: string
-  ) => {
-    const htmlContent = `
-      <html>
-        <body>
-          <h1>Contrat de Location</h1>
-          <p>Locataire: ${renter}</p>
-          <p>Montant: ${paid ? amount : "Non payé"} €</p>
-          <p>Date de début: ${new Date(date).toLocaleDateString()}</p>
-          <p>Date de fin: ${new Date(date_end).toLocaleDateString()}</p>
-        </body>
-      </html>
-    `;
+  
+  if (!isLoaded || !user) {
+    console.log("User is not loaded or not signed in");
+    return;
+  }
 
-    try {
-      const { uri } = await Print.printToFileAsync({
-        html: htmlContent,
-        base64: false,
-      });
-      await Sharing.shareAsync(uri); // Cela permettra aux utilisateurs de télécharger ou de partager le PDF
-    } catch (error) {
-      console.error("Erreur lors de la génération du PDF:", error);
+  const handleMessageClient = async (rent: Rent) => {
+    // Implement your messaging logic here
+    console.log(`Messaging client with ID: ${rent.id}`);
+    const response = await fetch(
+      `/(api)/cars/rents/allRentsHome/cancel-validate/${rent.id}?response=TRUE&&userId=${user.id}`
+    );
+    Alert.alert(
+      "Location Acceptée",
+      "Votre client(e) va être informé(e) par mail."
+    );
+  };
+
+  const handleCancelRental = async (rent: Rent) => {
+    // Implement your cancellation logic here
+    const response = await fetch(
+      `/(api)/cars/rents/allRentsHome/cancel-validate/${rent.id}?response=FALSE&&userId=${user.id}`
+    );
+
+    Alert.alert("Location Refusée",           
+                "Votre client(e) va être informé(e) par mail.");
+  };
+
+  const renderRecentRentals = () => {
+    if (!recentRentals || recentRentals.length === 0) {
+      return (
+        <Text className="text-sm text-gray-600">
+          Aucune location récente trouvée.
+        </Text>
+      );
     }
+
+    return recentRentals.map((rent, index) => {
+      const {
+        id,
+        renter,
+        amount,
+        paid,
+        date,
+        date_end,
+        renter_phone,
+        renter_email,
+        vehicle_brand,
+        vehicle_model,
+        vehicle_plate,
+        vehicle_condition,
+        agency_name,
+        agency_address,
+        agency_phone,
+        agency_email,
+      } = rent;
+
+      const startDate = new Date(date);
+      const endDate = new Date(date_end);
+      const Difference =
+        (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+      const daysDifference = Difference === 0 ? 1 : Difference;
+      const isExpanded = expandedRentId === id?.toString();
+
+      return (
+        <TouchableOpacity
+          key={index}
+          onPress={() => {
+            setExpandedRentId((prevId) =>
+              prevId === id?.toString() ? null : id?.toString() || null
+            );
+          }}
+          className={`p-4 border border-gray-200 rounded-lg mb-2 ${
+            isExpanded ? "bg-gray-50" : "bg-white"
+          }`}
+        >
+          <View className="flex-row justify-between items-center">
+            <View className="flex-1 pr-4">
+              <Text className="text-base font-semibold">{renter}</Text>
+              <Text className="text-sm text-gray-600">
+                Dates: {startDate.toLocaleDateString()} -{" "}
+                {endDate.toLocaleDateString()} ({daysDifference} jours)
+              </Text>
+              <Text className="text-sm">
+                Montant: {paid ? amount : "Not paid"} €
+              </Text>
+            </View>
+          </View>
+
+          {isExpanded && (
+            <View className="mt-4 pt-4 border-t border-gray-200">
+              <View className="flex-row justify-between space-x-2">
+                <TouchableOpacity
+                  onPress={() => handleMessageClient(rent)}
+                  className="flex-1 flex-row items-center bg-green-500 p-2 rounded-lg justify-center"
+                >
+                  <Ionicons name="checkmark-circle" size={20} color="white" />
+                  <Text className="ml-2 text-white">Accepter</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => handleCancelRental(rent)}
+                  className="flex-1 flex-row items-center bg-red-500 p-2 rounded-lg justify-center"
+                >
+                  <MaterialIcons name="cancel" size={20} color="white" />
+                  <Text className="ml-2 text-white">Refuser</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </TouchableOpacity>
+      );
+    });
   };
 
   return (
@@ -118,47 +203,15 @@ const Home = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Section de la localisation actuelle */}
-        <Text className="text-xl font-JakartaBold mt-5 mb-3">
-          Votre localisation actuelle
-        </Text>
+       
         <View className="flex flex-row items-center bg-transparent h-[300px]">
           <MapAgence />
         </View>
 
-        {/* Section des locations récentes */}
-        <View className="pt-4 mb-4">
-          <Text className="text-lg font-bold mb-2">Locations récentes</Text>
-          {recentRentals && recentRentals.length > 0 ? (
-            recentRentals.map((rent, index) => {
-              const { renter, amount, paid, date, date_end } = rent;
-              const startDate = new Date(date);
-              const endDate = new Date(date_end);
-              const daysDifference =
-                (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
-
-              return (
-                <View
-                  key={index}
-                  className="flex-row justify-between items-center p-4 border border-gray-200 rounded-lg mb-2"
-                >
-                  <View>
-                    <Text className="text-base font-semibold">{renter}</Text>
-                    <Text className="text-sm text-gray-600">
-                      Dates: {startDate.toLocaleDateString()} -{" "}
-                      {endDate.toLocaleDateString()} ({daysDifference} jours)
-                    </Text>
-                    <Text className="text-sm">
-                      Gains: {paid ? amount : "Non payé"} €
-                    </Text>
-                  </View>
-                  
-                </View>
-              );
-            })
-          ) : (
-            <Text className="text-sm text-gray-600">Aucune location récente</Text>
-          )}
+        
+        <View className="mb-4 mt-4">
+          <Text className="text-lg font-bold mb-2">Demandes de location</Text>
+          {renderRecentRentals()}
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -40,7 +40,7 @@ const ModifyCar: React.FC = () => {
     loading: loadingLastRent,
     error: errorLastRent,
   } = useFetch<Rent[]>(`/(api)/cars/rent/${car?.id_voiture}`);
-
+console.log(lastRent);
   const {
     data: actualEarningsData,
     loading: loadingEarnings,

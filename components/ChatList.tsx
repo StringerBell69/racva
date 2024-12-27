@@ -29,7 +29,6 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     try {
       const response = await fetch(`/(api)/${userId}`); // Ensure this URL is correct
       const data = await response.json();
-      console.log("data", data);
       return data.data || []; // Ensure data is an array of chat objects
     } catch (err) {
       setError("Failed to fetch chat IDs");
@@ -47,9 +46,7 @@ export const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
     if (chatData.length > 0) {
       setUserId(chatData[0].user_id);
     } else {
-      console.log("No chat data available");
     }
-    console.log(chatData)
     if (chatData.length > 0) {
       try {
         // Filter out duplicate chats by chatId

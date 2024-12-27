@@ -38,6 +38,7 @@ export async function GET(request: Request, { id }: { id: string }) {
         JOIN agence AS agence ON rentals.agence_id = agence.id_agence
       WHERE 
         rentals.voiture_id = ${id}
+      AND rentals.validate = TRUE
       ORDER BY 
         ABS(EXTRACT(EPOCH FROM (rentals.rental_start::timestamp - CURRENT_DATE::timestamp))) ASC
       LIMIT 1

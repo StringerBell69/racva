@@ -16,9 +16,10 @@ import { router, useLocalSearchParams } from "expo-router";
 
 const BookRide = () => {
   const { user } = useUser();
-  const { id_agence, id_voiture, start, end, amount, agenceTrue } =
+  const { id_agence, id_voiture, start, end, amount: rawAmount, agenceTrue } =
     useLocalSearchParams();
-
+  const amount = Number(rawAmount);
+  const NewAmount = (amount * 0.1).toFixed(2);
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Ensure start and end are valid date strings
@@ -73,12 +74,19 @@ const BookRide = () => {
         {/* Card Container */}
         <View className="bg-white rounded-xl shadow-lg p-6">
           <Text className="text-lg font-bold text-black">Récapitulatif</Text>
-
           {/* Price Summary */}
           <View className="flex-row justify-between mt-4">
             <Text className="text-sm text-gray-700">Prix total:</Text>
             <Text className="text-sm font-semibold">
               {amount ? `${amount} €` : "N/A"}
+            </Text>
+          </View>
+          <View className="flex-row justify-between mt-4">
+            <Text className="text-sm text-gray-700">
+              Prix de la Réservation:
+            </Text>
+            <Text className="text-sm font-semibold">
+              {NewAmount ? `${NewAmount} €` : "N/A"}
             </Text>
           </View>
 
@@ -89,9 +97,8 @@ const BookRide = () => {
               {formattedStart} - {formattedEnd}
             </Text>
           </View>
-
           {/* Payment Link for Agency */}
-          {agenceTrue && (
+          {/* {agenceTrue && (
             <TouchableOpacity
               onPress={generatePaymentLink}
               className="mt-4 p-3 rounded-lg border-2 border-gold-dark bg-transparent"
@@ -100,15 +107,14 @@ const BookRide = () => {
                 Générer un lien de paiement et réserver
               </Text>
             </TouchableOpacity>
-          )}
-
+          )} */}
           {/* Payment Component */}
           <View className="mt-4">
             {user && amount && id_agence && id_voiture && start && end && (
               <Payment
                 fullName={user?.fullName!}
                 email={user?.emailAddresses[0].emailAddress!}
-                amount={Array.isArray(amount) ? amount[0] : amount!}
+                amount={Array.isArray(NewAmount) ? NewAmount[0] : NewAmount!}
                 id_agence={Array.isArray(id_agence) ? id_agence[0] : id_agence!}
                 id_voiture={
                   Array.isArray(id_voiture) ? id_voiture[0] : id_voiture!

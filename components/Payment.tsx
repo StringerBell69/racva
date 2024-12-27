@@ -22,7 +22,7 @@ const Payment = ({
   end,
 }: PaymentProps) => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  
+  console.log(amount)
 
   const { userId } = useAuth();
   const [success, setSuccess] = useState<boolean>(false);
@@ -44,7 +44,7 @@ const Payment = ({
       merchantDisplayName: "Racva",
       intentConfiguration: {
         mode: {
-          amount: parseInt(amount) * 100,
+          amount: parseFloat(amount) * 100, // Convert amount to float and multiply by 100 for cents
           currencyCode: "eur",
         },
         confirmHandler: async (
@@ -62,7 +62,7 @@ const Payment = ({
               body: JSON.stringify({
                 name: fullName || email.split("@")[0],
                 email: email,
-                amount: amount,
+                amount: amount, // Keep amount as a string to handle float values
                 paymentMethodId: paymentMethod.id,
               }),
             },
@@ -94,7 +94,7 @@ const Payment = ({
                   start: start,
                   end: end,
                   payment_status: "upcoming",
-                  amount: amount,
+                  amount: amount, // Keep amount as a string to handle float values
                   user_id: userId,
                 }),
               });
