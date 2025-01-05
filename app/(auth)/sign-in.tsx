@@ -71,8 +71,7 @@ const SignIn = () => {
     }
   }, [isLoaded, form]);
 
-  // Check if user is defined
-  console.log(user);
+
 
   return (
     <ScrollView className="flex-1 bg-white">

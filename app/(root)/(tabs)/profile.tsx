@@ -6,6 +6,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  TextInput,
   Switch,
   Image,
   Pressable,
@@ -21,11 +22,18 @@ const Profile = () => {
     darkMode: false,
     emailNotifications: true,
     pushNotifications: false,
+    cni: "",
+    driverLicense: "",
+    additionalInfo: "",
   });
 
   const handleSignOut = () => {
     signOut();
     router.replace("/(auth)/sign-in");
+  };
+
+  const handleInputChange = (key: string, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const togglePreference = (key: string, value: boolean) => {
@@ -69,14 +77,42 @@ const Profile = () => {
           {user?.primaryEmailAddress?.emailAddress || "utilisateur@example.com"}
         </Text>
 
-        {/* Edit Profile Button 
-        <TouchableOpacity
-          onPress={() => router.push(`/chat`)}
-          className="bg-gray-900 rounded-xl p-4 items-center"
-        >
-          <Text className="text-gold font-bold">Éditer le profil</Text>
-        </TouchableOpacity>
+        {/* Edit Profile Section */}
+        <Text className="text-lg font-JakartaBold mt-8 mb-4">
+          Informations personnelles
+        </Text>
 
+        <View className="bg-white rounded-lg shadow-sm shadow-neutral-300 p-4">
+          <Text className="text-gray-700 mb-2">
+            Carte Nationale d'Identité (CNI)
+          </Text>
+          <TextInput
+            value={form.cni}
+            onChangeText={(value) => handleInputChange("cni", value)}
+            placeholder="Numéro de la CNI"
+            className="border border-gray-300 rounded-lg p-3 mb-4"
+          />
+
+          <Text className="text-gray-700 mb-2">Permis de conduire</Text>
+          <TextInput
+            value={form.driverLicense}
+            onChangeText={(value) => handleInputChange("driverLicense", value)}
+            placeholder="Numéro du permis de conduire"
+            className="border border-gray-300 rounded-lg p-3 mb-4"
+          />
+
+          <Text className="text-gray-700 mb-2">Autres informations</Text>
+          <TextInput
+            value={form.additionalInfo}
+            onChangeText={(value) => handleInputChange("additionalInfo", value)}
+            placeholder="Informations supplémentaires"
+            multiline
+            numberOfLines={4}
+            className="border border-gray-300 rounded-lg p-3 mb-4"
+          />
+        </View>
+
+        {/* Preferences Section */}
         <Text className="text-lg font-JakartaBold mt-8 mb-4">Préférences</Text>
         <View className="bg-white rounded-lg shadow-sm shadow-neutral-300 p-4">
           <View className="flex-row items-center justify-between mb-4">
@@ -106,7 +142,7 @@ const Profile = () => {
               }
             />
           </View>
-        </View> */}
+        </View>
 
         {/* Footer */}
         <Text className="text-center text-gray-500 mt-10">

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { ChatMessage } from "@/types/type";
 
 const WS_URL = process.env.EXPO_PUBLIC_WS_SERVER;
-console.log('WS_URL',WS_URL);
 export const useWebSocket = (chatId: string) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);

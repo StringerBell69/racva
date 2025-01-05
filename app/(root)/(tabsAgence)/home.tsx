@@ -103,9 +103,11 @@ const Home = () => {
   const renderRecentRentals = () => {
     if (!recentRentals || recentRentals.length === 0) {
       return (
-        <Text className="text-sm text-gray-600">
-          Aucune location récente trouvée.
-        </Text>
+        <View className="flex-1">
+          <Text className="text-sm text-gray-600 text-center">
+            Aucune location récente trouvée.
+          </Text>
+        </View>
       );
     }
 
@@ -188,8 +190,8 @@ const Home = () => {
   };
 
   return (
-    <SafeAreaView className="bg-white pb-20">
-      <ScrollView className="bg-white p-4">
+    <SafeAreaView className="bg-white pb-20 flex-1">
+      <ScrollView className="bg-white p-4 flex-1">
         {/* Section de l'entête */}
         <View className="flex flex-row items-center justify-between my-5">
           <Text className="text-2xl font-JakartaExtraBold">

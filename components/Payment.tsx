@@ -22,7 +22,6 @@ const Payment = ({
   end,
 }: PaymentProps) => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  console.log(amount)
 
   const { userId } = useAuth();
   const [success, setSuccess] = useState<boolean>(false);

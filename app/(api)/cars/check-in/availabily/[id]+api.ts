@@ -31,6 +31,7 @@ booked_days AS (
     INNER JOIN voiture v ON r.voiture_id = v.id_voiture
     WHERE r.voiture_id = ${id} 
       AND v.id_agence = ${id_agence}
+      AND r.validate = TRUE
 ),
 all_days AS (
     SELECT c.day, CASE WHEN b.day IS NOT NULL THEN TRUE ELSE FALSE END AS is_booked
