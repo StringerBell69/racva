@@ -14,5 +14,3 @@ EXPO_PUBLIC_GEOAPIFY_API_KEY=
 EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 
-# Recruiter email link
-EMAILME=mailto:daniel@smbsystem.me?subject=Request%20Access%20to%20RACVA%20Code&body=Please%20provide%20access%20to%20the%20RACVA%20new%20front%20and%20back-end%20code.
